@@ -16,8 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Example: $contactNumber = validateAndFormatPhoneNumber($contactNumber);
 
         // Twilio credentials (replace with your own credentials)
-        $sid = 'AC4fafee2b5eecc224a18fe740a9123df2';
-        $token = '7917196bf13b7080e2c821b513817c67';
+       // $sid = 'AC4fafee2b5eecc224a18fe740a9123df2';
+       // $token = '7917196bf13b7080e2c821b513817c67';
         $twilio = new Client($sid, $token);
 
         // Generate a random 6-digit verification code
