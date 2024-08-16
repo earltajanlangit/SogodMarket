@@ -336,7 +336,8 @@ Class Master extends DBConnection {
 				$this->settings->set_flashdata('success',"Rental Booking successfully updated.");
 				// Sending SMS Notification Using Twilio
 			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application is Successfully sent please wait for admin confirmation";
-			
+			// twilio id 
+			// twilio token
 			$client = new Client($account_id, $auth_token);
 		 	$twilio_number = "+12093754713";
 		 	$number = "+63 936 064 8398";
@@ -396,7 +397,8 @@ Class Master extends DBConnection {
 					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Done";
 				}
 				// Sending SMS Notification Using Twilio
-				
+				    // twilio id 
+			        // twilio token
                 	$client = new Client($account_id, $auth_token);
                 	$twilio_number = "+12093754713";
                 	$number = "+63 936 064 8398";
