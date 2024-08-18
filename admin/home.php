@@ -67,7 +67,7 @@
                 <span class="info-box-text">Clients</span>
                 <span class="info-box-number">
                 <?php 
-                    $clients = $conn->query("SELECT count(tbl_user_id) as total FROM `clients`")->fetch_assoc()['total'];
+                    $clients = $conn->query("SELECT count(id) as total FROM `clients`")->fetch_assoc()['total'];
                     echo number_format($clients);
                   ?>
                 </span>

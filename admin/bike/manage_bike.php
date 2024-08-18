@@ -22,7 +22,7 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 ?>
 <div class="card card-outline card-info">
 	<div class="card-header">
-		<h3 class="card-title"><?php echo isset($id) ? "Update ": "Create New " ?> Bike</h3>
+		<h3 class="card-title"><?php echo isset($id) ? "Update ": "Create New " ?> Space</h3>
 	</div>
 	<div class="card-body">
 		<form action="" id="bike-form">
@@ -40,22 +40,22 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                 </select>
 			</div>
             <div class="form-group">
-				<label for="brand_id" class="control-label">Brand Category</label>
-                <select name="brand_id" id="brand_id" class="custom-select select2" required>
+				<label for="space_type_id" class="control-label">Type of Space</label>
+                <select name="space_type_id" id="space_type_id" class="custom-select select2" required>
                 <option value="" selected="" disabled="">Select Category First</option>
                 <?php
-                    $qry = $conn->query("SELECT * FROM `space_type_list` where status = 1 ".(isset($brand_id) ? "or id = '{$brand_id}'" : "")." order by `name` asc");
+                    $qry = $conn->query("SELECT * FROM `space_type_list` where status = 1 ".(isset($space_type_id) ? "or id = '{$space_type_id}'" : "")." order by `name` asc");
                     while($row= $qry->fetch_assoc()):
                 ?>
-                <option value="<?php echo $row['id'] ?>" <?php echo isset($brand_id) && $brand_id == $row['id'] ? 'selected' : '' ?>><?php echo $row['name'] ?></option>
+                <option value="<?php echo $row['id'] ?>" <?php echo isset($space_type_id) && $space_type_id == $row['id'] ? 'selected' : '' ?>><?php echo $row['name'] ?></option>
                 <?php
                     endwhile; 
                 ?>
                 </select>
 			</div>
 			<div class="form-group">
-				<label for="bike_model" class="control-label">Model</label>
-                <textarea name="bike_model" id="" cols="30" rows="2" class="form-control form no-resize"><?php echo isset($bike_model) ? $bike_model : ''; ?></textarea>
+				<label for="space_name" class="control-label">Space Name</label>
+                <textarea name="space_name" id="" cols="30" rows="2" class="form-control form no-resize"><?php echo isset($space_name) ? $space_name : ''; ?></textarea>
 			</div>
             <div class="form-group">
                 <label for="quantity" class="control-label">Available Unit</label>

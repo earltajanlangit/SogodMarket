@@ -35,7 +35,7 @@
                         <tbody>
                             <?php 
                                 $i = 1;
-                                $qry = $conn->query("SELECT r.*,c.name as client from `rent_list` r inner join clients c on c.tbl_user_id = r.client_id where client_id = '{$_SESSION['user_id']}' order by unix_timestamp(r.date_created) desc ");
+                                $qry = $conn->query("SELECT r.*,CONCAT(c.firstname, ' ', c.lastname) as client from `rent_list` r inner join clients c on c.id = r.client_id where client_id = '{$_SESSION['user_id']}' order by unix_timestamp(r.date_created) desc ");
                                 while($row = $qry->fetch_assoc()):
                             ?>
                             <tr>

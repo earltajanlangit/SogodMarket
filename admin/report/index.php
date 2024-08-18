@@ -58,7 +58,7 @@ $date_end = isset($_GET['date_end']) ? $_GET['date_end'] :  date("Y-m-d") ;
                 <tbody>
                     <?php 
                     $i = 1;
-                        $bike = $conn->query("SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.brand_id = bb.id ");
+                        $bike = $conn->query("SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.space_type_id = bb.id ");
                         while($row= $bike->fetch_assoc()){
                             foreach($row as $k=>$v){
                                 if(!is_numeric($k)){
@@ -68,7 +68,7 @@ $date_end = isset($_GET['date_end']) ? $_GET['date_end'] :  date("Y-m-d") ;
                         }
 
                         $where = " where date(r.date_created) between '{$date_start}' and '{$date_end}'";
-                        $qry = $conn->query("SELECT r.*,c.name as client,c.email from `rent_list` r inner join clients c on c.tbl_user_id = r.client_id {$where} order by unix_timestamp(r.date_created) desc ");
+                        $qry = $conn->query("SELECT r.*,CONCAT(c.firstname, ' ', c.lastname) as client,c.email from `rent_list` r inner join clients c on c.id = r.client_id {$where} order by unix_timestamp(r.date_created) desc ");
                         while($row = $qry->fetch_assoc()):
                     ?>
                     <tr>
@@ -98,9 +98,9 @@ $date_end = isset($_GET['date_end']) ? $_GET['date_end'] :  date("Y-m-d") ;
                            
                         </td>
                         <td>
-                            <small><span class="text-muted">Category: </span><?php echo isset($bike_arr[$row['bike_id']]) ? $bike_arr[$row['bike_id']]['category'] : 'N/A' ?></small><br>
-                            <small><span class="text-muted">Type of Spaces: </span><?php echo isset($bike_arr[$row['bike_id']]) ? $bike_arr[$row['bike_id']]['brand'] : 'N/A' ?></small><br>
-                            <small><span class="text-muted">Space name: </span><?php echo isset($bike_arr[$row['bike_id']]) ? $bike_arr[$row['bike_id']]['bike_model'] : 'N/A' ?></small>
+                            <small><span class="text-muted">Category: </span><?php echo isset($bike_arr[$row['space_id']]) ? $bike_arr[$row['space_id']]['category'] : 'N/A' ?></small><br>
+                            <small><span class="text-muted">Type of Spaces: </span><?php echo isset($bike_arr[$row['space_id']]) ? $bike_arr[$row['space_id']]['brand'] : 'N/A' ?></small><br>
+                            <small><span class="text-muted">Space name: </span><?php echo isset($bike_arr[$row['space_id']]) ? $bike_arr[$row['space_id']]['space_name'] : 'N/A' ?></small>
                         </td>
                     </tr>
                     <?php endwhile; ?>

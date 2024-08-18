@@ -2,9 +2,9 @@
 include ('../conn/conn.php');
 session_start();
 
-if (isset($_POST['name'], $_POST['contact_number'], $_POST['email'], $_POST['generated_code'])) {
+if (isset($_POST['name'], $_POST['contact'], $_POST['email'], $_POST['generated_code'])) {
     $name = $_POST['name'];
-    $contactNumber = $_POST['contact_number'];
+    $contactNumber = $_POST['contact'];
     $email = $_POST['email'];
     $generatedCode = $_POST['generated_code'];
     
@@ -17,9 +17,9 @@ if (isset($_POST['name'], $_POST['contact_number'], $_POST['email'], $_POST['gen
         if (empty($nameExist)) {
             $conn->beginTransaction();
 
-            $insertStmt = $conn->prepare("INSERT INTO `clients` (`name`, `contact_number`, `email`, `generated_code`) VALUES (:name, :contact_number, :email, :generated_code)");
+            $insertStmt = $conn->prepare("INSERT INTO `clients` (`name`, `contact`, `email`, `generated_code`) VALUES (:name, :contact, :email, :generated_code)");
             $insertStmt->bindParam('name', $name, PDO::PARAM_STR);
-            $insertStmt->bindParam('contact_number', $contactNumber, PDO::PARAM_STR);
+            $insertStmt->bindParam('contact', $contactNumber, PDO::PARAM_STR);
             $insertStmt->bindParam('email', $email, PDO::PARAM_STR);
             $insertStmt->bindParam('generated_code', $generatedCode, PDO::PARAM_STR);
 

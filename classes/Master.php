@@ -147,7 +147,7 @@ Class Master extends DBConnection {
 			if(!empty($data)) $data .=",";
 				$data .= " `description`='".addslashes(htmlentities($description))."' ";
 		}
-		$check = $this->conn->query("SELECT * FROM `space_list` where `bike_model` = '{$bike_model}' ".(!empty($id) ? " and id != {$id} " : "")." ")->num_rows;
+		$check = $this->conn->query("SELECT * FROM `space_list` where `space_name` = '{$space_name}' ".(!empty($id) ? " and id != {$id} " : "")." ")->num_rows;
 		if($this->capture_err())
 			return $this->capture_err();
 		if($check > 0){
@@ -336,8 +336,8 @@ Class Master extends DBConnection {
 				$this->settings->set_flashdata('success',"Rental Booking successfully updated.");
 				// Sending SMS Notification Using Twilio
 			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application is Successfully sent please wait for admin confirmation";
-			// twilio id 
-			// twilio token
+			$account_id = "AC4fafee2b5eecc224a18fe740a9123df2";
+			$auth_token = "1f5574dc9bb0629ae38a9e313e20b058";
 			$client = new Client($account_id, $auth_token);
 		 	$twilio_number = "+12093754713";
 		 	$number = "+63 936 064 8398";
@@ -380,7 +380,7 @@ Class Master extends DBConnection {
 			} 
 				// Decrement the quantity of the bike if the status is Confirmed (1)
 				if (isset($status) && $status == 1) {
-					$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` - 1 WHERE `id` = '{$bike_id}'";
+					$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` - 1 WHERE `id` = '{$space_id}'";
 					$update = $this->conn->query($update_sql);
                 	$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Confirmed";
          
@@ -397,8 +397,8 @@ Class Master extends DBConnection {
 					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Done";
 				}
 				// Sending SMS Notification Using Twilio
-				    // twilio id 
-			        // twilio token
+				    $account_id = "AC4fafee2b5eecc224a18fe740a9123df2";
+               		$auth_token = "1f5574dc9bb0629ae38a9e313e20b058";
                 	$client = new Client($account_id, $auth_token);
                 	$twilio_number = "+12093754713";
                 	$number = "+63 936 064 8398";
@@ -478,7 +478,7 @@ Class Master extends DBConnection {
 			if(isset($id) && $id > 0){
 			$whereand = " and id !='{$id}'";
 		}
-		$check = $this->conn->query("SELECT count(id) as count FROM `rent_list` where bike_id='{$bike_id}' and (('{$ds}' BETWEEN date(date_start) and date(date_end)) OR ('{$de}' BETWEEN date(date_start) and date(date_end))) and status != 2 {$whereand} ")->fetch_array()['count'];
+		$check = $this->conn->query("SELECT count(id) as count FROM `rent_list` where space_id='{$space_id}' and (('{$ds}' BETWEEN date(date_start) and date(date_end)) OR ('{$de}' BETWEEN date(date_start) and date(date_end))) and status != 2 {$whereand} ")->fetch_array()['count'];
 
 		if($check >= $max_unit){
 			$resp['status'] = 'not_available';

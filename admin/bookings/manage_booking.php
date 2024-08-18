@@ -8,8 +8,8 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
         }
     }
 }
-if(isset($bike_id)){
-    $bike = $conn->query("SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.brand_id = bb.id where b.id = '{$bike_id}' ");
+if(isset($space_id)){
+    $bike = $conn->query("SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.space_type_id = bb.id where b.id = '{$space_id}' ");
     if($bike->num_rows > 0){
         foreach($bike->fetch_assoc() as $k => $v){
             $bike_meta[$k]=stripslashes($v);
@@ -21,9 +21,9 @@ if(isset($bike_id)){
     <form action="" id="book-form">
         <p><b>Category:</b> <?php echo $bike_meta['category'] ?></p>
         <p><b>Type of Space:</b> <?php echo $bike_meta['brand'] ?></p>
-        <p><b>Space:</b> <?php echo $bike_meta['bike_model'] ?></p>
+        <p><b>Space:</b> <?php echo $bike_meta['space_name'] ?></p>
         <input type="hidden" name="id" value="<?php echo $_GET['id'] ?>">
-        <input type="hidden" name="bike_id" value="<?php echo isset($bike_id) ? $bike_id : ''  ?>">
+        <input type="hidden" name="space_id" value="<?php echo isset($space_id) ? $space_id : ''  ?>">
         <input type="hidden" name="client_id" value="<?php echo isset($client_id) ? $client_id : ''  ?>">
         <div class="form-group">
             <label for="date_start" class="control-label">Rent Start Date</label>
@@ -91,10 +91,10 @@ if(isset($bike_id)){
             $('#date_start, #date_end').removeClass('border-success border-danger')
             var ds = $('#date_start').val()
             var de = $('#date_end').val()
-            var bike_id = "<?php echo isset($bike_id) ? $bike_id :'' ?>";
+            var space_id = "<?php echo isset($space_id) ? $space_id :'' ?>";
             var max_unit = "<?php echo isset($bike_meta['quantity']) ? $bike_meta['quantity'] :'' ?>";
             var id = "<?php echo isset($id) ? $id :'' ?>";
-            if(ds == '' || de == '' || bike_id == '' || max_unit == '')
+            if(ds == '' || de == '' || space_id == '' || max_unit == '')
             return false;
             if(de < ds){
                 $('#date_start, #date_end').addClass('border-danger')
@@ -106,7 +106,7 @@ if(isset($bike_id)){
             $.ajax({
                 url:'classes/Master.php?f=rent_avail',
                 method:"POST",
-                data:{ds:ds,de:de,bike_id:bike_id,max_unit:max_unit,id:id},
+                data:{ds:ds,de:de,space_id:space_id,max_unit:max_unit,id:id},
                 dataType:'json',
                 error:err=>{
                     console.log(err)

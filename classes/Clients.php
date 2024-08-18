@@ -15,37 +15,44 @@ class Clients extends DBConnection {
     }
 
 	public function save_users(){
+		
 		// Get individual variables from $_POST
-		$tbl_user_id = $_POST['tbl_user_id'] ?? '';
-		$name = $_POST['name'] ?? '';
-		$contact_number = $_POST['contact_number'] ?? '';
+		$id = $_POST['id'] ?? '';
+		$firstname = $_POST['firstname'] ?? '';
+		$lastname = $_POST['lastname'] ?? '';
+		$address = $_POST['address'] ?? '';
+		$gender = $_POST['gender'] ?? '';
+		$contact = $_POST['contact'] ?? '';
 		$email = $_POST['email'] ?? '';
+		$password = $_POST['password'] ?? '';
+		
 		
 	
 		// Prepare data for SQL query
-		$data = "tbl_user_id = ?, name = ?, contact_number = ?, email = ?";
-		$params = [$tbl_user_id, $name, $contact_number, $email];
+		$data = " firstname = ?, lastname = ?, gender = ?, address = ?, contact = ?, email = ?, password = ?";
+		$params = [ $firstname, $lastname, $gender, $address, $contact, $email, $password];
 	
 		// Handle password separately
-		if(!empty($name)){
-			$data .= ", name = ?";
-			$params[] = md5($name);
+		if(!empty($password)){
+			$data .= ", password = ?";
+			$params[] = md5($password);
 		}
 	
-		// Prepare SQL query
-		if(empty($tbl_user_id)){
+		if (empty($id)) {
 			// Insert new record
-			$stmt = $this->conn->prepare("INSERT INTO clients SET {$data}");
+			$sql = "INSERT INTO clients (firstname, lastname, gender, address, contact, email,password) VALUES (?, ?, ?, ?, ?, ?,?)";
+			$stmt = $this->conn->prepare($sql);
 		} else {
 			// Update existing record
-			$stmt = $this->conn->prepare("UPDATE clients SET {$data} WHERE tbl_user_id = ?");
-			$params[] = $tbl_user_id;
+			$sql = "UPDATE clients SET $data WHERE id = ?";
+			$stmt = $this->conn->prepare($sql);
+			$params[] = $id; // Add ID to parameters for update
 		}
 	
 		// Execute SQL query with parameters
 		if ($stmt->execute($params)) {
 			// Set flash message and session data
-			$message = empty($tbl_user_id) ? 'User Details successfully saved.' : 'User Details successfully updated.';
+			$message = empty($id) ? 'User Details successfully saved.' : 'User Details successfully updated.';
 			$this->settings->set_flashdata('success', $message);
 			$this->settings->set_userdata('email', $email);
 			// Set avatar session data if updated
@@ -57,10 +64,10 @@ class Clients extends DBConnection {
 	}
 
 	public function delete_users(){
-		$tbl_user_id = $_POST['tbl_user_id'] ?? '';
-		if (!empty($tbl_user_id)) {
-			$stmt = $this->conn->prepare("DELETE FROM clients WHERE tbl_user_id = ?");
-			$stmt->bind_param("i", $tbl_user_id); // Bind the parameter to the prepared statement
+		$id = $_POST['id'] ?? '';
+		if (!empty($id)) {
+			$stmt = $this->conn->prepare("DELETE FROM clients WHERE id = ?");
+			$stmt->bind_param("i", $id); // Bind the parameter to the prepared statement
 			if ($stmt->execute()) {
 				$this->settings->set_flashdata('success', 'User Details successfully deleted.');
 				return 1;

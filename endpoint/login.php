@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // Prepare and execute the SQL statement
-        $stmt = $conn->prepare("SELECT `generated_code`, `name`, `tbl_user_id` FROM `clients` WHERE `generated_code` = :generated_code");
+        $stmt = $conn->prepare("SELECT `generated_code`,CONCAT(`firstname`, ' ', `lastname`) AS `name`, `id` FROM `clients` WHERE `generated_code` = :generated_code");
         $stmt->bindParam(':generated_code', $qrCode);
         $stmt->execute();
 
@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
        // If the account exists
 if ($accountExist) {
     session_start();
-    $_SESSION['user_id'] = $accountExist['tbl_user_id'];
+    $_SESSION['user_id'] = $accountExist['id'];
 
     // Set session data directly
     foreach ($accountExist as $k => $v) {

@@ -21,7 +21,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-image: url("https://images.unsplash.com/photo-1507608158173-1dcec673a2e5?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+            background-image: url("uploads/buyingvegetables.jpg");
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -69,7 +69,7 @@
                         <button type="submit" class="btn btn-dark form-control">Login</button>
                     </form>
                 </div>
-                <p class="mt-3">No Account? Register <span class="switch-form-link" onclick="showRegistrationForm()">Here.</span></p>
+                <button id="back-login-btn" class="btn btn-primary btn-flat">Back</button>
             </div>
         </div>
 
@@ -89,7 +89,7 @@
                         <div class="form-group registration row">
                             <div class="col-5">
                                 <label for="contactNumber">Contact Number:</label>
-                                <input type="number" class="form-control" id="contactNumber" name="contact_number" maxlength="11">
+                                <input type="number" class="form-control" id="contactNumber" name="contact" maxlength="11">
                             </div>
                             <div class="col-7">
                                 <label for="email">Email:</label>
@@ -108,6 +108,7 @@
                         </div>
                         <button type="submit" class="btn btn-dark">Back to Login Form.</button>
                     </div>
+                    
                 </form>
             </div>
         </div>
@@ -205,6 +206,10 @@
 
         // Ensure the scanner starts after the page loads
     document.addEventListener('DOMContentLoaded', startScanner);
+     // Back button click event
+    document.getElementById('back-login-btn').addEventListener('click', function() {
+        window.location.href = "http://localhost/sogodmarket/";
+    });
 </script>
 
 

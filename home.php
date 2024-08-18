@@ -14,7 +14,7 @@
               $bikes = $conn->query("SELECT b.*, c.category, bb.name as brand 
                        FROM `space_list` b 
                        INNER JOIN categories c ON b.category_id = c.id 
-                       INNER JOIN space_type_list bb ON b.brand_id = bb.id 
+                       INNER JOIN space_type_list bb ON b.space_type_id = bb.id 
                        WHERE b.status = 1 AND b.quantity > 0");
                 if($bikes->num_rows > 0): 
                     while($row = $bikes->fetch_assoc()):
@@ -29,7 +29,7 @@
                     <div class="card-body p-4">
                         <div class="">
                             <!-- bike name -->
-                            <h5 class="fw-bolder"><?php echo $row['bike_model'] ?></h5>
+                            <h5 class="fw-bolder"><?php echo $row['space_name'] ?></h5>
                             <!-- bike price -->
                             <span><b>Daily Rate: </b><?php echo number_format($row['daily_rate']) ?></span>
                         </div>

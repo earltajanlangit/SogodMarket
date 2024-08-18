@@ -11,7 +11,7 @@
                 <h3><b>Cart List</b></h3>
                 <hr class="border-dark">
                 <?php 
-                    $qry = $conn->query("SELECT c.*,p.title,i.price,p.id as pid from `cart` c inner join `inventory` i on i.id=c.inventory_id inner join bikes p on p.id = i.bike_id where c.client_id = ".$_settings->userdata('id'));
+                    $qry = $conn->query("SELECT c.*,p.title,i.price,p.id as pid from `cart` c inner join `inventory` i on i.id=c.inventory_id inner join bikes p on p.id = i.space_id where c.client_id = ".$_settings->userdata('id'));
                     while($row= $qry->fetch_assoc()):
                         $upload_path = base_app.'/uploads/bike_'.$row['pid'];
                         $img = "";

@@ -42,7 +42,7 @@ if(isset($_GET['s'])){
                         $whereData = "";
                         if(isset($_GET['search'])){
                             if(!empty($whereData) ) $whereData.= " and ";
-                            $whereData .= " and (b.bike_model LIKE '%{$_GET['search']}%' or c.category LIKE '%{$_GET['search']}%' or b.description LIKE '%{$_GET['search']}%' or bb.name LIKE '%{$_GET['search']}%')";
+                            $whereData .= " and (b.space_name LIKE '%{$_GET['search']}%' or c.category LIKE '%{$_GET['search']}%' or b.description LIKE '%{$_GET['search']}%' or bb.name LIKE '%{$_GET['search']}%')";
                         }
                         if(isset($_GET['c'])){
                             if(!empty($whereData) ) $whereData.= " and ";
@@ -50,9 +50,9 @@ if(isset($_GET['s'])){
                         }
                         if(isset($_GET['s'])){
                             if(!empty($whereData) ) $whereData.= " and ";
-                            $whereData .= " and (md5(brand_id) = '{$_GET['s']}')";
+                            $whereData .= " and (md5(space_type_id) = '{$_GET['s']}')";
                         }
-                        $sql = "SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.brand_id = bb.id  where b.status = 1 {$whereData} order by rand()";
+                        $sql = "SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.space_type_id = bb.id  where b.status = 1 {$whereData} order by rand()";
                         $bikes = $conn->query($sql);
                         while($row = $bikes->fetch_assoc()):
                     ?>
@@ -64,7 +64,7 @@ if(isset($_GET['s'])){
                             <div class="card-body p-4">
                                 <div class="">
                                     <!-- bike name-->
-                                    <h5 class="fw-bolder"><?php echo $row['bike_model'] ?></h5>
+                                    <h5 class="fw-bolder"><?php echo $row['space_name'] ?></h5>
                                     <!-- bike price-->
                                 <span><b>Daily Rate: </b><?php echo number_format($row['daily_rate']) ?></span>
                                 </div>

@@ -6,7 +6,7 @@ if(!isset($_GET['id'])){
     $_settings->set_flashdata('error','No Booking ID Provided.');
     redirect('admin/?page=bookings');
 }
-$booking = $conn->query("SELECT r.*,c.name as client,c.email,c.contact_number from `rent_list` r inner join clients c on c.tbl_user_id = r.client_id where r.id = '{$_GET['id']}' ");
+$booking = $conn->query("SELECT r.*,CONCAT(c.firstname, ' ', c.lastname)as client,c.email,c.contact from `rent_list` r inner join clients c on c.id = r.client_id where r.id = '{$_GET['id']}' ");
 if($booking->num_rows > 0){
     foreach($booking->fetch_assoc() as $k => $v){
         $$k = $v;
@@ -15,8 +15,8 @@ if($booking->num_rows > 0){
     $_settings->set_flashdata('error','Booking ID provided is Unknown');
     redirect('admin/?page=bookings');
 }
-if(isset($bike_id)){
-    $bike = $conn->query("SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.brand_id = bb.id where b.id = '{$bike_id}' ");
+if(isset($space_id)){
+    $bike = $conn->query("SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.space_type_id = bb.id where b.id = '{$space_id}' ");
     if($bike->num_rows > 0){
         foreach($bike->fetch_assoc() as $k => $v){
             $bike_meta[$k]=stripslashes($v);
@@ -29,7 +29,7 @@ if(isset($bike_id)){
         <div class="col-md-6">
             <p><b>Client Name:</b> <?php echo $client ?></p>
             <p><b>Client Email:</b> <?php echo $email ?></p>
-            <p><b>Client Contact:</b> <?php echo $contact_number ?></p>
+            <p><b>Client Contact:</b> <?php echo $contact ?></p>
             <p><b>Rent Start Date:</b> <?php echo date("M d,Y" ,strtotime($date_start)) ?></p>
             <p><b>Rent End Date:</b> <?php echo date("M d,Y" ,strtotime($date_end)) ?></p>
         </div>

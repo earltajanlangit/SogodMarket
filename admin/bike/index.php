@@ -36,7 +36,7 @@
 				<tbody>
 					<?php 
 					$i = 1;
-						$qry = $conn->query("SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.brand_id = bb.id order by b.bike_model asc ");
+						$qry = $conn->query("SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.space_type_id = bb.id order by b.space_name asc ");
 						while($row = $qry->fetch_assoc()):
 							foreach($row as $k=> $v){
 								$row[$k] = trim(stripslashes($v));
@@ -48,8 +48,8 @@
 							<td><?php echo date("Y-m-d H:i",strtotime($row['date_created'])) ?></td>
 							<td><?php echo $row['category'] ?></td>
 							<td class="lh-1" >
-								<small><span class="text-muted">Brand:</span> <?php echo $row['brand'] ?></small><br>
-								<small><span class="text-muted">Model:</span> <?php echo $row['bike_model'] ?></small>
+								<small><span class="text-muted">Type of Space:</span> <?php echo $row['brand'] ?></small><br>
+								<small><span class="text-muted">Space Name:</span> <?php echo $row['space_name'] ?></small>
 							</td>
 							<td class="text-end"><?php echo number_format($row['quantity']) ?></td>
 							<td class="text-center">

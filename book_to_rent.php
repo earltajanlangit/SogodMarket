@@ -11,7 +11,7 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 ?>
 <div class="container-fluid">
     <form action="" id="book-form">
-        <input type="hidden" name="bike_id" value="<?php echo $_GET['id'] ?>">
+        <input type="hidden" name="space_id" value="<?php echo $_GET['id'] ?>">
         <div class="form-group">
             <label for="date_start" class="control-label">Start Date</label>
             <input type="date" name="date_start" id="date_start" class="form-control form-conrtrol-sm rounded-0" value="" required>
@@ -90,9 +90,9 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
             $('#date_start, #date_end').removeClass('border-success border-danger')
             var ds = $('#date_start').val()
             var de = $('#date_end').val()
-            var bike_id = "<?php echo isset($id) ? $id :'' ?>";
+            var space_id = "<?php echo isset($id) ? $id :'' ?>";
             var max_unit = "<?php echo isset($quantity) ? $quantity :'' ?>";
-            if(ds == '' || de == '' || bike_id == '' || max_unit == '')
+            if(ds == '' || de == '' || space_id == '' || max_unit == '')
             return false;
             if(de < ds){
                 $('#date_start, #date_end').addClass('border-danger')
@@ -104,7 +104,7 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
             $.ajax({
                 url:'classes/Master.php?f=rent_avail',
                 method:"POST",
-                data:{ds:ds,de:de,bike_id:bike_id,max_unit:max_unit},
+                data:{ds:ds,de:de,space_id:space_id,max_unit:max_unit},
                 dataType:'json',
                 error:err=>{
                     console.log(err)

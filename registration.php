@@ -57,51 +57,65 @@
                     <a href="javascript:void()" id="login-show">Already have an Account</a>
                     <button class="btn btn-primary btn-flat">Register</button>
                 </div>
+                <div class="form-group">
+                    <input type="hidden" id="generated_code" name="generated_code" value="">
+                </div>
             </div>
         </div>
     </form>
 
 </div>
 <script>
-    $(function(){
-        $('#login-show').click(function(){
-            uni_modal("","login.php")
-        })
-        $('#registration').submit(function(e){
-            e.preventDefault();
-            start_loader()
-            if($('.err-msg').length > 0)
-                $('.err-msg').remove();
-            $.ajax({
-                url:_base_url_+"classes/Master.php?f=register",
-                method:"POST",
-                data:$(this).serialize(),
-                dataType:"json",
-                error:err=>{
-                    console.log(err)
-                    alert_toast("an error occured",'error')
-                    end_loader()
-                },
-                success:function(resp){
-                    if(typeof resp == 'object' && resp.status == 'success'){
-                        alert_toast("Account succesfully registered",'success')
-                        setTimeout(function(){
-                            location.reload()
-                        },2000)
-                    }else if(resp.status == 'failed' && !!resp.msg){
-                        var _err_el = $('<div>')
-                            _err_el.addClass("alert alert-danger err-msg").text(resp.msg)
-                        $('[name="password"]').after(_err_el)
-                        end_loader()
-                        
-                    }else{
-                        console.log(resp)
-                        alert_toast("an error occured",'error')
-                        end_loader()
-                    }
+   function generateRandomCode(length) {
+    const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    let randomString = '';
+
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        randomString += characters.charAt(randomIndex);
+    }
+
+    return randomString;
+}
+
+$(function(){
+    // Generate code and set it in the hidden input
+    const generatedCode = generateRandomCode(10);
+    $('#generated_code').val(generatedCode);
+
+    $('#registration').submit(function(e){
+        e.preventDefault();
+        start_loader();
+        if($('.err-msg').length > 0)
+            $('.err-msg').remove();
+        $.ajax({
+            url:_base_url_+"classes/Master.php?f=register",
+            method:"POST",
+            data:$(this).serialize(),
+            dataType:"json",
+            error:err=>{
+                console.log(err);
+                alert_toast("an error occured",'error');
+                end_loader();
+            },
+            success:function(resp){
+                if(typeof resp == 'object' && resp.status == 'success'){
+                    alert_toast("Account successfully registered",'success');
+                    setTimeout(function(){
+                        location.reload();
+                    },2000);
+                }else if(resp.status == 'failed' && !!resp.msg){
+                    var _err_el = $('<div>')
+                        _err_el.addClass("alert alert-danger err-msg").text(resp.msg);
+                    $('[name="password"]').after(_err_el);
+                    end_loader();
+                }else{
+                    console.log(resp);
+                    alert_toast("an error occured",'error');
+                    end_loader();
                 }
-            })
-        })
-       
-    })
+            }
+        });
+    });
+});
 </script>

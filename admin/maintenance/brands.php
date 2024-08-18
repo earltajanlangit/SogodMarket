@@ -7,7 +7,7 @@
 	<div class="card-header">
 		<h3 class="card-title">Type of Spaces</h3>
 		<div class="card-tools">
-			<a href="javascript:void(0)" id="create_new" class="btn btn-flat btn-sm btn-primary bg-navy border-0"><span class="fas fa-plus"></span>  Create New</a>
+			<a href="javascript:void(0)" id="create_new" class="btn btn-flat btn-primary"><span class="fas fa-plus"></span>  Create New</a>
 		</div>
 	</div>
 	<div class="card-body">
@@ -72,7 +72,7 @@
 			uni_modal("<i class='fa fa-plus'></i> Add New Brand", 'maintenance/manage_brand.php')
 		})
 		$('.edit_data').click(function(){
-			uni_modal("<i class='fa fa-edit'></i> Edit Brand's Details", 'maintenance/manage_brand.php?id='+$(this).attr('data-id'))
+			uni_modal("<i class='fa fa-edit'></i> Edit Space's Details", 'maintenance/manage_brand.php?id='+$(this).attr('data-id'))
 		})
 		$('.delete_data').click(function(){
 			_conf("Are you sure to delete this brand permanently?","delete_brand",[$(this).attr('data-id')])

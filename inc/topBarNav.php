@@ -60,8 +60,8 @@
   $(function() {
     // Redirect to login page instead of opening a modal
     $('#login-btn').click(function() {
-       window.location.href = "loginindex.php";
-        // uni_modal("","login.php")
+      //  window.location.href = "loginindex.php";
+        uni_modal("","login.php")
     });
 
     $('#navbarResponsive').on('show.bs.collapse', function() {

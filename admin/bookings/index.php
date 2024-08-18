@@ -40,15 +40,15 @@
 				<tbody>
 					<?php 
 					$i = 1;
-					$qry = $conn->query("SELECT r.*,c.name as client from `rent_list` r inner join clients c on c.tbl_user_id = r.client_id order by unix_timestamp(r.date_created) desc ");
+					$qry = $conn->query("SELECT r.*, CONCAT(c.firstname, ' ', c.lastname) as client from `rent_list` r inner join clients c on c.id = r.client_id order by unix_timestamp(r.date_created) desc ");
 						while($row = $qry->fetch_assoc()):
 					?>
 						<tr>
 							<td class="text-center"><?php echo $i++; ?></td>
 							<td><?php echo date("Y-m-d H:i",strtotime($row['date_created'])) ?></td>
 							<td>
-								<small><span class="text-muted">Pick up:</span><?php echo date("Y-m-d",strtotime($row['date_start'])) ?></small><br>
-								<small><span class="text-muted">Return: </span><?php echo date("Y-m-d",strtotime($row['date_end'])) ?></small>
+								<small><span class="text-muted">Star Date:</span><?php echo date("Y-m-d",strtotime($row['date_start'])) ?></small><br>
+								<small><span class="text-muted">End Date: </span><?php echo date("Y-m-d",strtotime($row['date_end'])) ?></small>
 							</td>
 							<td><?php echo $row['client'] ?></td>
 							<td class="text-center">

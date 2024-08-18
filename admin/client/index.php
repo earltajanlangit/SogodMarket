@@ -28,7 +28,10 @@
 						<th>Client ID</th>
 						<th>Name</th>
 						<th>Contact Number</th>
+						<th>Gender</th>
+						<th>Address</th>
 						<th>Email</th>
+						<th>Password</th>
 						<th>QR CODE</th>
 						<th>Action</th>
 						
@@ -38,7 +41,7 @@
 				<tbody>
 					<?php 
 					$i = 1;
-						$qry = $conn->query("SELECT * from `clients` order by `tbl_user_id` asc ");
+						$qry = $conn->query("SELECT * from `clients` order by `id` asc ");
 						while($row = $qry->fetch_assoc()):
 							foreach($row as $k=> $v){
 								$row[$k] = trim(stripslashes($v));
@@ -47,10 +50,13 @@
 					?>
 						<tr>
 							<td class="text-center"><?php echo $i++; ?></td>
-							<td><?php echo $row['tbl_user_id'] ?></td>
-							<td><?php echo $row['name'] ?></td>
-							<td><?php echo $row['contact_number'] ?></td>
+							<td><?php echo $row['id'] ?></td>
+							<td><?php echo $row['firstname'] . ' ' . $row['lastname'];  ?></td>
+							<td><?php echo $row['contact'] ?></td>
+							<td><?php echo $row['gender'] ?></td>
+							<td><?php echo $row['address'] ?></td>
 							<td><?php echo $row['email'] ?></td>
+							<td><?php echo $row['password'] ?></td>
 							<td><?php echo $row['generated_code'] ?></td>
 							
 							<td align="center">
@@ -59,11 +65,11 @@
 				                    <span class="sr-only">Toggle Dropdown</span>
 				                  </button>
 				                  <div class="dropdown-menu" role="menu">
-								  	<a class="dropdown-item" href="<?php echo base_url ?>?p=view_bike&id=<?php echo md5($row['tbl_user_id']) ?>" target="_blank"><span class="fa fa-eye text-dark"></span> View</a>
+								  	<a class="dropdown-item" href="<?php echo base_url ?>?p=view_bike&id=<?php echo md5($row['id']) ?>" target="_blank"><span class="fa fa-eye text-dark"></span> View</a>
 				                    <div class="dropdown-divider"></div>
-				                    <a class="dropdown-item" href="?page=client/manage_client&id=<?php echo $row['tbl_user_id'] ?>"><span class="fa fa-edit text-primary"></span> Edit</a>
+				                    <a class="dropdown-item" href="?page=client/manage_client&id=<?php echo $row['id'] ?>"><span class="fa fa-edit text-primary"></span> Edit</a>
 				                    <div class="dropdown-divider"></div>
-				                    <a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['tbl_user_id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
+				                    <a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
 				                  </div>
 							</td>
 						</tr>
