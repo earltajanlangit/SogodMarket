@@ -59,6 +59,12 @@ class Login extends DBConnection {
 			$_SESSION['user_id'] = $user['id'];
 			$_SESSION['name'] = $name; // Combined name
 			$_SESSION['email'] = $user['email'];
+			$_SESSION['contact'] = $user['contact'];
+			$_SESSION['address'] = $user['address'];
+			$_SESSION['firstname'] = $user['firstname'];
+			$_SESSION['lastname'] = $user['lastname'];
+			$_SESSION['generated_code'] = $user['generated_code'];
+			$_SESSION['gender'] = $user['contact'];
 			$_SESSION['login_type'] = 1; // Set the login type
 	
 			// Return success response

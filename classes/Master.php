@@ -428,50 +428,81 @@ Class Master extends DBConnection {
 		return json_encode($resp);
 
 	}
-	function register(){
+	public function verify_code($contact, $entered_code) {
+		// Check if the verification code for the contact exists and matches
+		if (isset($_SESSION['verification_code'][$contact]) && $_SESSION['verification_code'][$contact] === $entered_code) {
+			// Remove the code from the session after successful verification
+			unset($_SESSION['verification_code'][$contact]);
+			return true;
+		}
+		return false;
+	}
+	
+	
+	public function register() {
+		// Start session
+	
+		
 		extract($_POST);
+	
+		// Check verification code
+		if (!$this->verify_code($contact, $verification_code)) {
+			$resp['status'] = 'failed';
+			$resp['msg'] = "Invalid verification code.";
+			return json_encode($resp);
+		}
+	
+		// Continue with existing registration logic
 		$data = "";
 		$_POST['password'] = md5($_POST['password']);
-		foreach($_POST as $k =>$v){
-			if(!in_array($k,array('id'))){
-				if(!empty($data)) $data .=",";
+		foreach($_POST as $k => $v) {
+			if (!in_array($k, array('id', 'verification_code'))) {
+				if (!empty($data)) $data .= ",";
 				$data .= " `{$k}`='{$v}' ";
 			}
 		}
-		$check = $this->conn->query("SELECT * FROM `clients` where `email` = '{$email}' ".(!empty($id) ? " and id != {$id} " : "")." ")->num_rows;
-		if($this->capture_err())
+	
+		// Check if email already exists
+		$check = $this->conn->query("SELECT * FROM `clients` WHERE `email` = '{$email}' ".(!empty($id) ? " AND id != {$id} " : "")." ")->num_rows;
+		if ($this->capture_err()) {
 			return $this->capture_err();
-		if($check > 0){
+		}
+		if ($check > 0) {
 			$resp['status'] = 'failed';
 			$resp['msg'] = "Email already taken.";
 			return json_encode($resp);
-			exit;
 		}
-		if(empty($id)){
-			$sql = "INSERT INTO `clients` set {$data} ";
+	
+		// Insert or update record
+		if (empty($id)) {
+			$sql = "INSERT INTO `clients` SET {$data}"; 	 	 		
 			$save = $this->conn->query($sql);
 			$id = $this->conn->insert_id;
-		}else{
-			$sql = "UPDATE `clients` set {$data} where id = '{$id}' ";
+		} else {
+			$sql = "UPDATE `clients` SET {$data} WHERE id = '{$id}'";
 			$save = $this->conn->query($sql);
 		}
-		if($save){
+	
+		if ($save) {
 			$resp['status'] = 'success';
-			if(empty($id))
-				$this->settings->set_flashdata('success',"Account successfully created.");
-			else
-				$this->settings->set_flashdata('success',"Account successfully updated.");
-			foreach($_POST as $k =>$v){
-					$this->settings->set_userdata($k,$v);
+			if (empty($id)) {
+				$this->settings->set_flashdata('success', "Account successfully created.");
+			} else {
+				$this->settings->set_flashdata('success', "Account successfully updated.");
 			}
-			$this->settings->set_userdata('id',$id);
-
-		}else{
+			foreach($_POST as $k => $v) {
+				$this->settings->set_userdata($k, $v);
+			}
+			$this->settings->set_userdata('id', $id);
+		} else {
 			$resp['status'] = 'failed';
-			$resp['err'] = $this->conn->error."[{$sql}]";
+			$resp['err'] = $this->conn->error . "[{$sql}]";
 		}
-		return json_encode($resp);
+	
+		return json_encode($resp);	
 	}
+	
+	
 	function rent_avail(){
 		extract($_POST);
 			$whereand = '';
