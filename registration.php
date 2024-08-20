@@ -73,6 +73,9 @@
         return Math.floor(100000 + Math.random() * 900000); // Generates a 6-digit number
     }
     const generatedCode = generateRandomCode();
+    $('#login-show').click(function() {  // Removed hyphen from the selector
+    uni_modal("", "login.php", "mid-large");
+        });
     $('#generated_code').val(generatedCode);
 
     $('#send_code').click(function() {

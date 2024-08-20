@@ -2,15 +2,15 @@
     #uni_modal .modal-content>.modal-footer,#uni_modal .modal-content>.modal-header{
         display:none;
     }
+    
 </style>
 <div class="container-fluid">
-    
     <div class="row">
-    <h3 class="float-right">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-    </h3>
+        <h3 class="float-right">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </h3>
         <div class="col-lg-12">
             <h3 class="text-center">Login</h3>
             <hr>
@@ -28,13 +28,14 @@
                     <button class="btn btn-primary btn-flat">Login</button>
                 </div>
             </form>
+            
             <button id="qr-login-btn" class="btn btn-primary btn-flat">Login with QR</button>
         </div>
     </div>
 </div>
 <script>
    $('#qr-login-btn').click(function() {  // Removed hyphen from the selector
-    window.location.href = "loginindex.php";
+    uni_modal("", "qrlogin.php", "mid-large");
 });
 
 $('#create_account').click(function(){

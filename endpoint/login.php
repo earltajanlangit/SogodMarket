@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
        // If the account exists
 if ($accountExist) {
     session_start();
-    $_SESSION['user_id'] = $accountExist['id'];
+    $_SESSION['id'] = $accountExist['id'];
 
     // Set session data directly
     foreach ($accountExist as $k => $v) {

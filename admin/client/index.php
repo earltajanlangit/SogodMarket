@@ -65,8 +65,6 @@
 				                    <span class="sr-only">Toggle Dropdown</span>
 				                  </button>
 				                  <div class="dropdown-menu" role="menu">
-								  	<a class="dropdown-item" href="<?php echo base_url ?>?p=view_bike&id=<?php echo md5($row['id']) ?>" target="_blank"><span class="fa fa-eye text-dark"></span> View</a>
-				                    <div class="dropdown-divider"></div>
 				                    <a class="dropdown-item" href="?page=client/manage_client&id=<?php echo $row['id'] ?>"><span class="fa fa-edit text-primary"></span> Edit</a>
 				                    <div class="dropdown-divider"></div>
 				                    <a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>

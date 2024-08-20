@@ -46,7 +46,7 @@
                         <li class="nav-item"><a class="nav-link" href="./?p=about">About</a></li>
                     </ul>
                     <div class="d-flex align-items-center">
-                      <?php if(!isset($_SESSION['user_id'])): ?>
+                      <?php if(!isset($_SESSION['id'])): ?>
                         <button class="btn btn-outline-light ml-2" id="login-btn" type="button">Login</button>
                         <?php else: ?>
                             <a href="./?p=my_account" class="text-light  nav-link"><b> Hi, <?php echo $_SESSION['name']?>!</b></a>

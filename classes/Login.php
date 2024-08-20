@@ -56,7 +56,7 @@ class Login extends DBConnection {
 			$name = $user['firstname'] . ' ' . $user['lastname'];
 	
 			// Set session variables
-			$_SESSION['user_id'] = $user['id'];
+			$_SESSION['id'] = $user['id'];
 			$_SESSION['name'] = $name; // Combined name
 			$_SESSION['email'] = $user['email'];
 			$_SESSION['contact'] = $user['contact'];

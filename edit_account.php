@@ -13,7 +13,7 @@
                     <!-- Form Column -->
                     <div class="col-md-6">
                         <form action="" id="update_account">
-                            <input type="hidden" name="id" value="<?php echo $_SESSION['user_id']?>">
+                            <input type="hidden" name="id" value="<?php echo $_SESSION['id']?>">
                             <div class="form-group">
                                 <label for="firstname" class="control-label">Firstname</label>
                                 <input type="text" name="firstname" class="form-control form" value="<?php echo $_SESSION['firstname']?>" required>

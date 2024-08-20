@@ -315,7 +315,7 @@ Class Master extends DBConnection {
 		extract($_POST);
 		$data = "";
 		if (!isset($client_id)) {
-			$_POST['client_id'] = $_SESSION['user_id'];
+			$_POST['client_id'] = $_SESSION['id'];
 		}
 		foreach ($_POST as $k => $v) {
 			if (!in_array($k, array('id', 'description'))) {
@@ -337,7 +337,7 @@ Class Master extends DBConnection {
 				// Sending SMS Notification Using Twilio
 			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application is Successfully sent please wait for admin confirmation";
 			$account_id = "AC4fafee2b5eecc224a18fe740a9123df2";
-			$auth_token = "1f5574dc9bb0629ae38a9e313e20b058";
+			$auth_token = "e287cd99a0befe9a246bdf57759c8cc7";
 			$client = new Client($account_id, $auth_token);
 		 	$twilio_number = "+12093754713";
 		 	$number = "+63 936 064 8398";
@@ -358,7 +358,7 @@ Class Master extends DBConnection {
 		extract($_POST);
 		$data = "";
 		if (!isset($client_id)) {
-			$_POST['client_id'] = $_SESSION['user_id'];
+			$_POST['client_id'] = $_SESSION['id'];
 		}
 		foreach ($_POST as $k => $v) {
 			if (!in_array($k, array('id', 'description'))) {
@@ -398,7 +398,7 @@ Class Master extends DBConnection {
 				}
 				// Sending SMS Notification Using Twilio
 				    $account_id = "AC4fafee2b5eecc224a18fe740a9123df2";
-               		$auth_token = "1f5574dc9bb0629ae38a9e313e20b058";
+               		$auth_token = "e287cd99a0befe9a246bdf57759c8cc7";
                 	$client = new Client($account_id, $auth_token);
                 	$twilio_number = "+12093754713";
                 	$number = "+63 936 064 8398";

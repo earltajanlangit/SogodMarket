@@ -95,7 +95,7 @@
         })
         $('#book_bike').click(function(){
             if('<?php echo $_SESSION['id'] ?>' <= 0){
-                window.location.href = "loginindex.php";
+                window.location.href = "login.php";
                 return false;
             }
             uni_modal("Rental Booking","book_to_rent.php?id=<?php echo isset($id) ? $id : '' ?>",'mid-large')
