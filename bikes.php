@@ -78,7 +78,7 @@ if(isset($_GET['s'])){
                     <?php endwhile; ?>
                     <?php 
                         if($bikes->num_rows <= 0){
-                            echo "<h4 class='text-center'><b>No Bike Listed Yet.</b></h4>";
+                            echo "<h4 class='text-center'><b>No Space Listed Yet.</b></h4>";
                         }
                     ?>
                 </div>       
