@@ -152,7 +152,7 @@ Class Master extends DBConnection {
 			return $this->capture_err();
 		if($check > 0){
 			$resp['status'] = 'failed';
-			$resp['msg'] = "Bike Model already exist.";
+			$resp['msg'] = "space already exist.";
 			return json_encode($resp);
 			exit;
 		}
