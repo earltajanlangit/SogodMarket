@@ -16,7 +16,6 @@
 			<table class="table table-hovered table-striped">
 				<colgroup>
 					<col width="5%">
-					<col width="20%">
 					<col width="50%">
 					<col width="10%">
 					<col width="15%">
@@ -24,7 +23,6 @@
 				<thead>
 					<tr class="bg-navy disabled">
 						<th>#</th>
-						<th>Date Created</th>
 						<th>Name</th>
 						<th>Status</th>
 						<th>Action</th>
@@ -38,7 +36,6 @@
 					?>
 						<tr>
 							<td class="text-center"><?php echo $i++; ?></td>
-							<td><?php echo date("Y-m-d H:i",strtotime($row['date_created'])) ?></td>
 							<td><?php echo $row['name'] ?></td>
 							<td class="text-center">
                                 <?php if($row['status'] == 1): ?>
@@ -80,7 +77,7 @@
 		$('.table td,.table th').addClass('px-2 py-1')
 		$('.table').dataTable({
 			columnDefs: [
-				{ targets: [3, 4], orderable: false}
+				{ targets: [2, 3], orderable: false}
 			],
 			initComplete:function(settings, json){
 				$('.table td,.table th').addClass('px-2 py-1')

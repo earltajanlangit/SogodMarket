@@ -122,7 +122,7 @@ Class Master extends DBConnection {
 		$del = $this->conn->query("DELETE FROM `categories` where id = '{$id}'");
 		if($del){
 			$resp['status'] = 'success';
-			$this->settings->set_flashdata('success',"Category successfully deleted.");
+			$this->settings->set_flashdata('success'," successfully deleted.");
 		}else{
 			$resp['status'] = 'failed';
 			$resp['error'] = $this->conn->error;
@@ -317,6 +317,10 @@ Class Master extends DBConnection {
 		if (!isset($client_id)) {
 			$_POST['client_id'] = $_SESSION['id'];
 		}
+
+		$meeting_schedule = date('Y-m-d H:i:s', strtotime('+1 week'));
+		$_POST['meeting_schedule'] = $meeting_schedule; // Add meeting_schedule to $_POST
+	
 		foreach ($_POST as $k => $v) {
 			if (!in_array($k, array('id', 'description'))) {
 				if (!empty($data)) $data .= ",";
@@ -335,7 +339,7 @@ Class Master extends DBConnection {
 			if(!empty($id))
 				$this->settings->set_flashdata('success',"Rental Booking successfully updated.");
 				// Sending SMS Notification Using Twilio
-			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application is Successfully sent please wait for admin confirmation";
+			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application is Successfully sent. Please Visit our office until $meeting_schedule ";
 			$account_id = "AC4fafee2b5eecc224a18fe740a9123df2";
 			$auth_token = "e287cd99a0befe9a246bdf57759c8cc7";
 			$client = new Client($account_id, $auth_token);
@@ -346,7 +350,7 @@ Class Master extends DBConnection {
 		 'from' => $twilio_number,
 		 'body' => $message 	
 	 ]);
-	 // end of SMS Notification Using Twilio
+			//  end of SMS Notification Using Twilio
 			
 		}else{
 			$resp['status'] = 'failed';

@@ -16,7 +16,6 @@
 			<table class="table table-bordered table-striped">
 				<colgroup>
 					<col width="5%">
-					<col width="15%">
 					<col width="25%">
 					<col width="30%">
 					<col width="10%">
@@ -25,7 +24,6 @@
 				<thead>
 					<tr class="bg-navy disabled">
 						<th>#</th>
-						<th>Date Created</th>
 						<th>Category</th>
 						<th>Space Info</th>
 						<th>Quantity</th>
@@ -45,7 +43,6 @@
 					?>
 						<tr>
 							<td class="text-center"><?php echo $i++; ?></td>
-							<td><?php echo date("Y-m-d H:i",strtotime($row['date_created'])) ?></td>
 							<td><?php echo $row['category'] ?></td>
 							<td class="lh-1" >
 								<small><span class="text-muted">Type of Space:</span> <?php echo $row['brand'] ?></small><br>
@@ -88,7 +85,7 @@
 		$('.table td,.table th').addClass('px-2 py-1')
 		$('.table').dataTable({
 			columnDefs: [
-				{ targets: [5, 6], orderable: false}
+				{ targets: [4, 5], orderable: false}
 			],
 			initComplete:function(settings, json){
 				$('.table td,.table th').addClass('px-2 py-1')

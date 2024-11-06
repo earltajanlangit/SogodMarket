@@ -207,9 +207,9 @@
         // Ensure the scanner starts after the page loads
     document.addEventListener('DOMContentLoaded', startScanner);
      // Back button click event
-    document.getElementById('back-login-btn').addEventListener('click', function() {
-        window.location.href = "http://localhost/sogodmarket/";
-    });
+     document.getElementById('back-login-btn').addEventListener('click', function() {
+  history.back();
+});
 </script>
 
 

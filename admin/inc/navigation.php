@@ -32,20 +32,20 @@
                       </a>
                     </li> 
                     <li class="nav-item dropdown">
-                      <a href="<?php echo base_url ?>admin/?page=bike" class="nav-link nav-bike">
-                        <i class="nav-icon fas fa-store"></i>
-                        <p>
-                          Space List
-                        </p>
-                      </a>
-                    </li>
-                    <li class="nav-item dropdown">
                       <a href="<?php echo base_url ?>admin/?page=bookings" class="nav-link nav-bookings">
                         <i class="nav-icon fas fa-th-list"></i>
                         <p>
                           Booking List
                         </p>
                       </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                       <a href="<?php echo base_url ?>admin/?page=client" class="nav-link nav-maintenance/clients">
+                          <i class="nav-icon fas fa-users"></i> <!-- Example icon, change as needed -->
+                          <p>
+                            Vendors List
+                           </p>
+                         </a>
                     </li>
                     <li class="nav-item dropdown">
                       <a href="<?php echo base_url ?>admin/?page=report" class="nav-link nav-report">
@@ -55,7 +55,23 @@
                         </p>
                       </a>
                     </li>
-                    <li class="nav-header">Maintenance</li>
+                    <li class="nav-item dropdown">
+                      <a href="<?php echo base_url ?>admin/?page=system_info" class="nav-link nav-system_info">
+                        <i class="nav-icon fas fa-cogs"></i>
+                        <p>
+                          Settings
+                        </p>
+                      </a>
+                    </li>
+                    <li class="nav-header">Manage Space</li>
+                    <li class="nav-item dropdown">
+                      <a href="<?php echo base_url ?>admin/?page=bike" class="nav-link nav-bike">
+                        <i class="nav-icon fas fa-store"></i>
+                        <p>
+                          Space List
+                        </p>
+                      </a>
+                    </li>
                     <li class="nav-item dropdown">
                       <a href="<?php echo base_url ?>admin/?page=maintenance/brands" class="nav-link nav-maintenance/brands">
                         <i class="nav-icon fas fa-store"></i>
@@ -69,22 +85,6 @@
                         <i class="nav-icon fas fa-th-list"></i>
                         <p>
                           Category List
-                        </p>
-                      </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                       <a href="<?php echo base_url ?>admin/?page=client" class="nav-link nav-maintenance/clients">
-                          <i class="nav-icon fas fa-users"></i> <!-- Example icon, change as needed -->
-                          <p>
-                            Clients
-                           </p>
-                         </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                      <a href="<?php echo base_url ?>admin/?page=system_info" class="nav-link nav-system_info">
-                        <i class="nav-icon fas fa-cogs"></i>
-                        <p>
-                          Settings
                         </p>
                       </a>
                     </li>

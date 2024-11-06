@@ -2,30 +2,28 @@
 <script>
 	alert_toast("<?php echo $_settings->flashdata('success') ?>",'success')
 </script>
-<?php endif;?>
+<?php endif; ?>
 <?php if($_settings->chk_flashdata('error')): ?>
 <script>
 	alert_toast("<?php echo $_settings->flashdata('error') ?>",'error')
 </script>
-<?php endif;?>
+<?php endif; ?>
 <div class="card card-outline card-primary">
 	<div class="card-header">
 		<h3 class="card-title">List of Bookings</h3>
-		<!-- <div class="card-tools">
-			<a href="?page=order/manage_order" class="btn btn-flat btn-primary"><span class="fas fa-plus"></span>  Create New</a>
-		</div> -->
 	</div>
 	<div class="card-body">
 		<div class="container-fluid">
-        <div class="container-fluid">
 			<table class="table table-bordered table-striped">
 				<colgroup>
 					<col width="5%">
 					<col width="15%">
 					<col width="25%">
 					<col width="20%">
+					<col width="10%"> <!-- New column for Type of Space -->
+					<col width="10%"> <!-- New column for Category -->
+					<col width="10%"> <!-- New column for Meeting Schedule -->
 					<col width="10%">
-					<col width="15%">
 				</colgroup>
 				<thead>
 					<tr class="bg-navy text-white">
@@ -33,6 +31,9 @@
 						<th>Date Booked</th>
 						<th>Rent Schedule</th>
 						<th>Client</th>
+						<th>Type of Space</th>
+						<th>Category</th> <!-- New header for Category -->
+						<th>Meeting Schedule</th> <!-- New header for Meeting Schedule -->
 						<th>Status</th>
 						<th>Action</th>
 					</tr>
@@ -40,17 +41,29 @@
 				<tbody>
 					<?php 
 					$i = 1;
-					$qry = $conn->query("SELECT r.*, CONCAT(c.firstname, ' ', c.lastname) as client from `rent_list` r inner join clients c on c.id = r.client_id order by unix_timestamp(r.date_created) desc ");
-						while($row = $qry->fetch_assoc()):
+					// Updated query to join rent_list, space_list, and categories tables
+					$qry = $conn->query("SELECT r.*, CONCAT(c.firstname, ' ', c.lastname) as client, 
+											s.space_name, cat.category, r.meeting_schedule 
+											FROM `rent_list` r 
+											INNER JOIN clients c ON c.id = r.client_id 
+											INNER JOIN space_list s ON s.id = r.space_id 
+											INNER JOIN categories cat ON cat.id = s.category_id 
+											ORDER BY unix_timestamp(r.date_created) DESC");
+					while($row = $qry->fetch_assoc()): 
 					?>
 						<tr>
 							<td class="text-center"><?php echo $i++; ?></td>
-							<td><?php echo date("Y-m-d H:i",strtotime($row['date_created'])) ?></td>
+							<td><?php echo date("Y-m-d H:i", strtotime($row['date_created'])) ?></td>
 							<td>
-								<small><span class="text-muted">Star Date:</span><?php echo date("Y-m-d",strtotime($row['date_start'])) ?></small><br>
-								<small><span class="text-muted">End Date: </span><?php echo date("Y-m-d",strtotime($row['date_end'])) ?></small>
+								<small><span class="text-muted">Start Date:</span> <?php echo date("Y-m-d", strtotime($row['date_start'])) ?></small><br>
+								<small><span class="text-muted">End Date: </span> <?php echo date("Y-m-d", strtotime($row['date_end'])) ?></small>
 							</td>
 							<td><?php echo $row['client'] ?></td>
+							<td><?php echo $row['space_name']; ?></td> <!-- New cell for Type of Space -->
+							<td><?php echo $row['category']; ?></td> <!-- New cell for Category -->
+							<td><?php echo "Until " . date("F j, Y", strtotime($row['meeting_schedule'])); ?></td> <!-- New cell for Meeting Schedule (formatted) -->
+
+
 							<td class="text-center">
                                 <?php if($row['status'] == 0): ?>
                                     <span class="badge badge-light">Pending</span>
@@ -60,27 +73,26 @@
                                     <span class="badge badge-danger">Cancelled</span>
 								<?php elseif($row['status'] == 3): ?>
                                     <span class="badge badge-success">Done</span>
-
                                 <?php else: ?>
                                     <span class="badge badge-danger">Cancelled</span>
                                 <?php endif; ?>
                             </td>
+							
 							<td align="center">
-								 <button type="button" class="btn btn-flat btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
-				                  		Action
-				                    <span class="sr-only">Toggle Dropdown</span>
-				                  </button>
-				                  <div class="dropdown-menu" role="menu">
-				                    <a class="dropdown-item view_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-th-list text-dark"></span> View Details</a>
-				                    <div class="dropdown-divider"></div>
-				                    <a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
-				                  </div>
+								<button type="button" class="btn btn-flat btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
+									Action
+									<span class="sr-only">Toggle Dropdown</span>
+								</button>
+								<div class="dropdown-menu" role="menu">
+									<a class="dropdown-item view_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-th-list text-dark"></span> View Details</a>
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
+								</div>
 							</td>
 						</tr>
 					<?php endwhile; ?>
 				</tbody>
 			</table>
-		</div>
 		</div>
 	</div>
 </div>
@@ -101,16 +113,16 @@
 			method:"POST",
 			data:{id: $id},
 			dataType:"json",
-			error:err=>{
-				console.log(err)
-				alert_toast("An error occured.",'error');
+			error: err => {
+				console.log(err);
+				alert_toast("An error occurred.", 'error');
 				end_loader();
 			},
-			success:function(resp){
-				if(typeof resp== 'object' && resp.status == 'success'){
+			success:function(resp) {
+				if(typeof resp == 'object' && resp.status == 'success') {
 					location.reload();
-				}else{
-					alert_toast("An error occured.",'error');
+				} else {
+					alert_toast("An error occurred.", 'error');
 					end_loader();
 				}
 			}

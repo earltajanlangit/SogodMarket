@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'b8e662032e8540319885096d1fcb73135aeec0c3',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,18 +11,18 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'b8e662032e8540319885096d1fcb73135aeec0c3',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
         'twilio/sdk' => array(
-            'pretty_version' => '8.2.0',
-            'version' => '8.2.0.0',
-            'reference' => 'e634588785d07cf7db584fa3b73203406e11064e',
+            'pretty_version' => '8.3.7',
+            'version' => '8.3.7.0',
+            'reference' => 'd2eba45cdc483fde10527ce44811d6bbeea3c82e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../twilio/sdk',
             'aliases' => array(),
