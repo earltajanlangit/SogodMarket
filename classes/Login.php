@@ -73,11 +73,11 @@ class Login extends DBConnection {
             $_SESSION['otp'] = rand(100000, 999999);
 
             // Sending SMS Notification Using Twilio
-				 $account_id = "ACf135ab5e39c48fcdbb605db4696c768c";
-                 $auth_token = "313d5b268ae30613b3033b4340a53ff3";
+				 $account_id = "id";
+                 $auth_token = "token";
                  $client = new Client($account_id, $auth_token);
-                 $twilio_number = "+12242315707";
-                 $number = "+63 991 960 9412";
+                 $twilio_number = "twillio number";
+                 $number = "phone number";
              
                  $client->messages->create($number, [
                  'from' => $twilio_number,
