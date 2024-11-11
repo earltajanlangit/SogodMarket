@@ -92,29 +92,46 @@
 
     <!-- CSS for Background Slider and Buttons -->
     <style>
-        #main-headers {
-            position: relative;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            transition: background-image 1s ease-in-out;
-            min-height: 300px; /* Adjust the height as needed */
-        }
-        /* Button Styling */
-        .slider-btn {
-            position: absolute;
-            top: 50%;   
-            padding: 10px 20px;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            cursor: pointer;
-            transform: translateY(-50%);
-        }
-        .slider-btn-left {
-            left: 10px;
-        }
-        .slider-btn-right {
-            right: 10px;
-        }
+       #main-headers {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 1s ease-in-out;
+    min-height: 300px; /* Adjust the height as needed */
+}
+
+/* Dark overlay */
+#main-headers::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Dark overlay */
+    z-index: 1;
+}
+
+/* Button Styling */
+.slider-btn {
+    position: absolute;
+    top: 50%;   
+    padding: 10px 20px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transform: translateY(-50%);
+    z-index: 2; /* Ensure buttons are above overlay */
+}
+
+.slider-btn-left {
+    left: 10px;
+}
+
+.slider-btn-right {
+    right: 10px;
+}
+
     </style>
