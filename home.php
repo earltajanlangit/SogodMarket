@@ -1,12 +1,17 @@
-<!-- Header -->
-<headclassr class="bg-dark py-5" id="main-header">
+<!-- Header with Next and Previous Buttons -->
+<div class="bg-dark py-5 position-relative" id="main-headers">
     <div class="container px-4 px-lg-5 my-5">
         <div class="text-center text-white">
             <h1 class="display-4 fw-bolder">Sogod Market Vendor's Leasing and Renewal Management System</h1>
             <p class="lead fw-normal text-white-50 mb-0">Rent Now!</p>
         </div>
     </div>
-</headclassr>
+    <!-- Slider Control Buttons -->
+    <button id="prevButton" class="slider-btn slider-btn-left"><</button>
+    <button id="nextButton" class="slider-btn slider-btn-right">></button>
+</div>
+
+
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-5">
         <div class="row gx-4 gx-lg-5 row-cols-md-3 row-cols-xl-4 row-cols-sm-1 justify-content-center">
@@ -50,3 +55,66 @@
         </div>
     </div>
 </section>
+
+<!-- JavaScript for Background Slider -->
+    <script>
+        const header = document.getElementById("main-headers");
+        const images = [
+            'uploads/buyingvegetables.jpg',
+            'uploads/thumbnails/1.png'
+        ];
+        let currentImageIndex = 0;
+
+        function changeBackgroundImage() {
+            header.style.backgroundImage = `url(${images[currentImageIndex]})`;
+        }
+
+        // Initial background image
+        changeBackgroundImage();
+
+        // Auto-change image every 5 seconds
+        setInterval(() => {
+            currentImageIndex = (currentImageIndex + 1) % images.length;
+            changeBackgroundImage();
+        }, 5000);
+
+        // Next and Previous Button Functionality
+        document.getElementById("nextButton").addEventListener("click", () => {
+            currentImageIndex = (currentImageIndex + 1) % images.length;
+            changeBackgroundImage();
+        });
+
+        document.getElementById("prevButton").addEventListener("click", () => {
+            currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+            changeBackgroundImage();
+        });
+    </script>
+
+    <!-- CSS for Background Slider and Buttons -->
+    <style>
+        #main-headers {
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 1s ease-in-out;
+            min-height: 300px; /* Adjust the height as needed */
+        }
+        /* Button Styling */
+        .slider-btn {
+            position: absolute;
+            top: 50%;   
+            padding: 10px 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transform: translateY(-50%);
+        }
+        .slider-btn-left {
+            left: 10px;
+        }
+        .slider-btn-right {
+            right: 10px;
+        }
+    </style>

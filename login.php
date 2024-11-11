@@ -25,9 +25,14 @@
         <label for="password" class="control-label">Password</label>
         <input type="password" class="form-control form" id="password" name="password" autocomplete="current-password" required>
     </div>
+    <div>
+    <a href="javascript:void()" id="create_account">Create Account</a>
+    </div>
+    <span></span>
     <div class="form-group d-flex justify-content-between">
-        <a href="javascript:void()" id="create_account">Create Account</a>
+        <button id="qr-login-btn" class="btn btn-primary btn-flat">Login with QR</button>
         <button type="submit" class="btn btn-primary btn-flat">Login</button>
+        
     </div>
 </form>
             
@@ -40,10 +45,10 @@
             </div>
             <div class="d-flex justify-content-between">
         <!-- QR Login Button on the left -->
-             <button id="qr-login-btn" class="btn btn-primary btn-flat">Login with QR</button>
-         <!-- OTP Verify Button on the right -->
-              <button type="submit" class="btn btn-primary btn-flat">Verify OTP</button>
-             </div>
+        <button id="qr-login-btn" class="btn btn-primary btn-flat">Login with QR</button>
+        <!-- OTP Verify Button on the right -->
+        <button type="submit" class="btn btn-primary btn-flat">Verify OTP</button>
+         </div>
         </form>
 
         </div>

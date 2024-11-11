@@ -17,13 +17,15 @@
 			<table class="table table-bordered table-striped">
 				<colgroup>
 					<col width="5%">
+					<col width="10%">
 					<col width="15%">
-					<col width="25%">
 					<col width="20%">
+					<col width="20%"> <!-- New column for Client Address -->
 					<col width="10%"> <!-- New column for Type of Space -->
 					<col width="10%"> <!-- New column for Category -->
-					<col width="10%"> <!-- New column for Meeting Schedule -->
-					<col width="10%">
+					<col width="15%"> <!-- New column for Meeting Schedule -->
+					<col width="10%"> <!-- New column for Status -->
+					<col width="10%"> <!-- New column for Action -->
 				</colgroup>
 				<thead>
 					<tr class="bg-navy text-white">
@@ -31,6 +33,7 @@
 						<th>Date Booked</th>
 						<th>Rent Schedule</th>
 						<th>Client</th>
+						<th>Client Address</th> <!-- New header for Address -->
 						<th>Type of Space</th>
 						<th>Category</th> <!-- New header for Category -->
 						<th>Meeting Schedule</th> <!-- New header for Meeting Schedule -->
@@ -41,9 +44,9 @@
 				<tbody>
 					<?php 
 					$i = 1;
-					// Updated query to join rent_list, space_list, and categories tables
+					// Updated query to join rent_list, space_list, and categories tables and fetch address
 					$qry = $conn->query("SELECT r.*, CONCAT(c.firstname, ' ', c.lastname) as client, 
-											s.space_name, cat.category, r.meeting_schedule 
+											s.space_name, cat.category, r.meeting_schedule, c.address 
 											FROM `rent_list` r 
 											INNER JOIN clients c ON c.id = r.client_id 
 											INNER JOIN space_list s ON s.id = r.space_id 
@@ -59,11 +62,10 @@
 								<small><span class="text-muted">End Date: </span> <?php echo date("Y-m-d", strtotime($row['date_end'])) ?></small>
 							</td>
 							<td><?php echo $row['client'] ?></td>
+							<td><?php echo $row['address']; ?></td> <!-- New cell for Client Address -->
 							<td><?php echo $row['space_name']; ?></td> <!-- New cell for Type of Space -->
 							<td><?php echo $row['category']; ?></td> <!-- New cell for Category -->
 							<td><?php echo "Until " . date("F j, Y", strtotime($row['meeting_schedule'])); ?></td> <!-- New cell for Meeting Schedule (formatted) -->
-
-
 							<td class="text-center">
                                 <?php if($row['status'] == 0): ?>
                                     <span class="badge badge-light">Pending</span>

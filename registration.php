@@ -45,7 +45,7 @@
             <div class="col-lg-7">
                 <div class="form-group">
                     <label for="" class="control-label">Address</label>
-                    <textarea class="form-control form" rows='3' name="address"></textarea>
+                    <textarea class="form-control form" rows='3' name="address" required></textarea>
                 </div>
                 <div class="form-group">
                     <label for="" class="control-label">Email</label>

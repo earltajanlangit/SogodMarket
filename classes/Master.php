@@ -534,7 +534,33 @@ Class Master extends DBConnection {
 		}
 		return json_encode($resp);
 	}
+	function mark_booking_as_viewed(){
+		extract($_POST);
+		$update = $this->conn->query(query: "UPDATE `rent_list` 
+          SET is_viewed = 1 
+          WHERE status = 0 
+          AND is_viewed = 0 ");
+		if($update){
+			$resp['status']='success';
+		}else{
+			$resp['status']='failed';
+			$resp['error']=$this->conn->error;
+		}
+		return json_encode($resp);
+	}
+	function fetch_booking_count() {
+		global $conn;
+		$query = $conn->query("SELECT COUNT(*) as count 
+							   FROM `rent_list` 
+							   WHERE status = 0 
+							   AND is_viewed = 0");
+		$bookingCount = $query->fetch_assoc()['count'];
+		return $bookingCount;
+	}
+
 }
+
+
 
 $Master = new Master();
 $action = !isset($_GET['f']) ? 'none' : strtolower($_GET['f']);
@@ -582,6 +608,12 @@ switch ($action) {
 	break;
 	case 'delete_img':
 		echo $Master->delete_img();
+	break;
+	case 'mark_booking_as_viewed':
+		echo $Master->mark_booking_as_viewed();
+	break;
+	case 'fetch_booking_count':
+		echo $Master->fetch_booking_count();
 	break;
 	default:
 		// echo $sysset->index();

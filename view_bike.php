@@ -73,7 +73,7 @@
                             <h5 class="fw-bolder"><?php echo $row['space_name'] ?></h5>
                             <!-- bike price-->
                             <span><b>Price: </b><?php echo number_format($row['daily_rate']) ?></span>
-                            <p class="m-0"><small>Brand: <?php echo $row['brand'] ?></small> <br>
+                            <p class="m-0"><small>Space Type: <?php echo $row['brand'] ?></small> <br>
                             <small><?php echo $row['category'] ?></small>
                             </p>
                             <p class="m-0 truncate-3"><small class="text-muted"><?php echo strip_tags(html_entity_decode(stripslashes($row['description']))) ?></small></p>
