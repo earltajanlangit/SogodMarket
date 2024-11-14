@@ -6,7 +6,16 @@ if(!isset($_GET['id'])){
     $_settings->set_flashdata('error','No Booking ID Provided.');
     redirect('admin/?page=bookings');
 }
-$booking = $conn->query("SELECT r.*,CONCAT(c.firstname, ' ', c.lastname)as client,c.email,c.contact from `rent_list` r inner join clients c on c.id = r.client_id where r.id = '{$_GET['id']}' ");
+
+$booking = $conn->query("SELECT r.*, 
+                        CONCAT(c.firstname, ' ', c.lastname) AS client, 
+                        c.email, 
+                        c.contact, 
+                        r.months_to_rent
+                        FROM `rent_list` r 
+                        INNER JOIN clients c ON c.id = r.client_id 
+                        WHERE r.id = '{$_GET['id']}' ");
+
 if($booking->num_rows > 0){
     foreach($booking->fetch_assoc() as $k => $v){
         $$k = $v;
@@ -15,8 +24,13 @@ if($booking->num_rows > 0){
     $_settings->set_flashdata('error','Booking ID provided is Unknown');
     redirect('admin/?page=bookings');
 }
+
 if(isset($space_id)){
-    $bike = $conn->query("SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.space_type_id = bb.id where b.id = '{$space_id}' ");
+    $bike = $conn->query("SELECT b.*, c.category, bb.name as brand, b.monthly_rate 
+                          FROM `space_list` b 
+                          INNER JOIN categories c ON b.category_id = c.id 
+                          INNER JOIN space_type_list bb ON b.space_type_id = bb.id 
+                          WHERE b.id = '{$space_id}' ");
     if($bike->num_rows > 0){
         foreach($bike->fetch_assoc() as $k => $v){
             $bike_meta[$k]=stripslashes($v);
@@ -24,7 +38,7 @@ if(isset($space_id)){
     }
 }
 ?>
-<div class="conitaner-fluid px-3 py-2">
+<div class="container-fluid px-3 py-2">
     <div class="row">
         <div class="col-md-6">
             <p><b>Client Name:</b> <?php echo $client ?></p>
@@ -36,9 +50,9 @@ if(isset($space_id)){
         <div class="col-md-6">
             <p><b>Category:</b> <?php echo $bike_meta['category'] ?></p>
             <p><b>Type of Space:</b> <?php echo $bike_meta['brand'] ?></p>
-            <p><b>Daily Rate:</b> <?php echo number_format($amount/$rent_days,2) ?></p>
-            <p><b>Day/s to Rent:</b> <?php echo $rent_days ?></p>
-            <p><b>Client Payable Amount:</b> <?php echo number_format($amount,2) ?></p>
+            <p><b>Monthly Rate:</b> <?php echo number_format($bike_meta['monthly_rate'], 2) ?></p>
+            <p><b>Months to Rent:</b> <?php echo $months_to_rent ?></p>
+            <p><b>Client Payable Amount:</b> <?php echo number_format($bike_meta['monthly_rate'] * $months_to_rent, 2) ?></p>
         </div>
     </div>
     <div class="row">
@@ -65,15 +79,16 @@ if(isset($space_id)){
             }
         ?>
         </div>
-            
     </div>
 </div>
+
 <div class="modal-footer">
     <?php if(!isset($_GET['view'])): ?>
     <button type="button" id="update" class="btn btn-sm btn-flat btn-primary">Edit</button>
     <?php endif; ?>
     <button type="button" class="btn btn-secondary btn-sm btn-flat" data-dismiss="modal">Close</button>
 </div>
+
 <style>
     #uni_modal>.modal-dialog>.modal-content>.modal-footer{
         display:none;
@@ -82,6 +97,7 @@ if(isset($space_id)){
         padding:0;
     }
 </style>
+
 <script>
     $(function(){
         $('#update').click(function(){

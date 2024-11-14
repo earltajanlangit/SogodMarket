@@ -1,178 +1,132 @@
 <?php
 require_once('config.php');
-if(isset($_GET['id']) && $_GET['id'] > 0){
-    $qry = $conn->query("SELECT * from `space_list` where id = '{$_GET['id']}' ");
-    if($qry->num_rows > 0){
-        foreach($qry->fetch_assoc() as $k => $v){
-            $$k=stripslashes($v);
-        }
+$monthly_rate = 0.00;  // Set default value
+
+if (isset($_GET['id']) && $_GET['id'] > 0) {
+    // Fetch monthly_rate from the database based on the provided space ID
+    $qry = $conn->query("SELECT monthly_rate FROM `space_list` WHERE id = '{$_GET['id']}'");
+    if ($qry->num_rows > 0) {
+        $space = $qry->fetch_assoc();
+        $monthly_rate = $space['monthly_rate'];  // Get monthly_rate from the result
     }
 }
-?>
+?>  
+
 <div class="container-fluid">
     <form action="" id="book-form">
         <input type="hidden" name="space_id" value="<?php echo $_GET['id'] ?>">
+        
+        <!-- Start Date Field -->
         <div class="form-group">
             <label for="date_start" class="control-label">Start Date</label>
-            <input type="date" name="date_start" id="date_start" class="form-control form-conrtrol-sm rounded-0" value="" required>
+            <input type="date" name="date_start" id="date_start" class="form-control form-control-sm rounded-0" required>
         </div>
+        
+        <!-- Months to Rent Field -->
         <div class="form-group">
-            <label for="date_end" class="control-label">End Date</label>
-            <input type="date" name="date_end" id="date_end" class="form-control form-conrtrol-sm rounded-0" value="" required>
+            <label for="months_to_rent" class="control-label">Months to Rent</label>
+            <input type="number" name="months_to_rent" id="months_to_rent" class="form-control form-control-sm rounded-0 text-right" value="1" required>
         </div>
-        <div id="msg" class="text-danger"></div>
-        <div id="check-availability-loader" class="d-none">
-            <center>
-                <div class="d-flex align-items-center col-md-6">
-                    <strong>Checking Availability...</strong>
-                    <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
-                </div>
-            </center>
-        </div>
+        
+        <!-- Monthly Rate Field (readonly) -->
         <div class="form-group">
-            <label for="rent_days" class="control-label">Days to Rent</label>
-            <input type="number" name="rent_days" id="rent_days" class="form-control form-conrtrol-sm rounded-0 text-right" value="0" required readonly>
+            <label for="monthly_rate" class="control-label">Monthly Rate</label>
+            <input type="text" id="monthly_rate" class="form-control form-control-sm rounded-0 text-right" value="<?php echo number_format($monthly_rate, 2) ?>" readonly>
         </div>
-        <div class="form-group">
-            <label for="daily_rate" class="control-label">Daily Rate</label>
-            <input type="text"  id="daily_rate" class="form-control form-conrtrol-sm rounded-0 text-right" value="<?php echo isset($daily_rate) ? number_format($daily_rate,2) : 0.00 ?>" required readonly>
-        </div>
+        
+        <!-- Total Amount Field (readonly) -->
         <div class="form-group">
             <label for="amount" class="control-label">Total Amount</label>
-            <input type="number" name="amount" id="amount" class="form-control form-conrtrol-sm rounded-0 text-right" value="0" required readonly>
+            <input type="number" name="amount" id="amount" class="form-control form-control-sm rounded-0 text-right" value="0" readonly>
         </div>
+        
+        <!-- Hidden End Date Field -->
+        <input type="hidden" name="date_end" id="date_end">
+
+        <!-- Message/Error Display -->
+        <div id="msg" class="text-danger"></div>
     </form>
 </div>
 
 <script>
-     function calc_rent_days(){
-        var ds = new Date($('#date_start').val())
-        var de = new Date($('#date_end').val())
-        var diff = de - ds;
-        var days = (Math.floor((diff)/(1000*60*60*24))) + 1;
-        if(days < 30){
-            $('#msg').text("Reservation should 1 month above");
-            $('#date_start, #date_end').addClass('border-danger');
-            $('#rent_days').val(0);
-            $('#amount').val(0);
-        } else {
-            $('#rent_days').val(days);
-            $('#date_start, #date_end').removeClass('border-danger').addClass('border-success');
-            calc_amount();
-        }
-    
-    } function calc_rent_days(){
-            var ds = new Date($('#date_start').val())
-            var de = new Date($('#date_end').val())
-            var diff = de - ds;
-            var days = (Math.floor((diff)/(1000*60*60*24))) + 1;
-            if(days < 30){
-                $('#msg').text("Reservation should 1 month above");
-                $('#date_start, #date_end').addClass('border-danger');
-                $('#rent_days').val(0);
-                $('#amount').val(0);
-            } else {
-                $('#rent_days').val(days);
-                $('#date_start, #date_end').removeClass('border-danger').addClass('border-success');
-                calc_amount();
-            }
-        }
-    function calc_amount(){
-        var dr = "<?php echo isset($daily_rate) ? $daily_rate :'' ?>";
-        var days = $('#rent_days').val()
-        var amount  = dr * days;
-        console.log(amount)
-        $('#amount').val(amount)
+    // Function to calculate the end date based on start date and months to rent
+    function calc_end_date() {
+        const startDate = new Date($('#date_start').val());
+        const months = parseInt($('#months_to_rent').val());
+
+        if (isNaN(startDate.getTime()) || isNaN(months)) return;
+
+        // Add the specified months to the start date
+        startDate.setMonth(startDate.getMonth() + months);
+        
+        // Format the date as YYYY-MM-DD and update the hidden date_end field
+        const dateEnd = startDate.toISOString().split('T')[0];
+        $('#date_end').val(dateEnd);
     }
-    $(function(){
-        $('#date_start, #date_end').change(function(){
-            $('#msg').text('')
-            $('#date_start, #date_end').removeClass('border-success border-danger')
-            var ds = $('#date_start').val()
-            var de = $('#date_end').val()
-            var space_id = "<?php echo isset($id) ? $id :'' ?>";
-            var max_unit = "<?php echo isset($quantity) ? $quantity :'' ?>";
-            if(ds == '' || de == '' || space_id == '' || max_unit == '')
-            return false;
-            if(de < ds){
-                $('#date_start, #date_end').addClass('border-danger')
-                $('#msg').text("Invalid Selected Dates")
-                return false;
-            }
-            $('#check-availability-loader').removeClass('d-none')
-            $('#uni_modal button').attr('disabled',true)
-            $.ajax({
-                url:'classes/Master.php?f=rent_avail',
-                method:"POST",
-                data:{ds:ds,de:de,space_id:space_id,max_unit:max_unit},
-                dataType:'json',
-                error:err=>{
-                    console.log(err)
-                    alert_toast('An error occured while checking availability','error')
-                    $('#check-availability-loader').addClass('d-none')
-                    $('#uni_modal button').attr('disabled',false)
-                },
-                success:function(resp){
-                    if(resp.status == 'success'){
-                        $('#date_start, #date_end').addClass('border-success')
-                    }else if(resp.status == 'not_available'){
-                        $('#date_start, #date_end').addClass('border-danger')
-                        $('#msg').text(resp.msg)
-                    }else{
-                        alert_toast('An error occured while checking availability','error')
-                    }
-                    $('#check-availability-loader').addClass('d-none')
-                    $('#uni_modal button').attr('disabled',false)
-                    calc_rent_days()
-                }
-            })
-            
-        })
-        $('#book-form').submit(function(e){
+
+    // Function to calculate total amount based on monthly rate and months
+    function calc_amount() {
+        const monthlyRate = parseFloat("<?php echo isset($monthly_rate) ? $monthly_rate : 0 ?>");
+        const months = parseInt($('#months_to_rent').val());
+        
+        // Calculate the total amount
+        const amount = monthlyRate * months;
+        
+        // Update the input fields with the calculated values
+        $('#monthly_rate').val(monthlyRate.toFixed(2));
+        $('#amount').val(amount.toFixed(2));
+    }
+
+    $(function() {
+        // Trigger calculations when start date or months to rent field changes
+        $('#date_start, #months_to_rent').change(function() {
+            $('#msg').text('');
+            calc_amount();
+            calc_end_date();  // Calculate end date
+        });
+
+        // Handle form submission via AJAX
+        $('#book-form').submit(function(e) {
             e.preventDefault();
-            var _this = $(this)
-            if(_this.find('.border-danger').length > 0){
-                alert_toast('Can\'t proceed submission due to invalid inputs in some fields.','warning')
-                return false;
-            }
+            const _this = $(this);
             $('.err-msg').remove();
             start_loader();
+
             $.ajax({
-    url: _base_url_ + "classes/Master.php?f=save_bookingspart2",
-    data: new FormData($(this)[0]),
-    cache: false,
-    contentType: false,
-    processData: false,
-    method: 'POST',
-    dataType: 'json',
-    error: function(err) {
-        console.log(err);
-        alert_toast("An error occurred", 'error');
-        end_loader();
-    },
-    success: function(resp) {
-        if (typeof resp == 'object' && resp.status == 'success') {
-            end_loader();
-            $('#uni_modal').modal('hide');
-            setTimeout(() => {
-                uni_modal('', 'success_booking.php');
-            }, 500);
-        } else if (resp.status == 'failed' && !!resp.msg) {
-            var el = $('<div>');
-            el.addClass("alert alert-danger err-msg").text(resp.msg);
-            _this.prepend(el);
-            el.show('slow');
-            $("html, body").animate({
-                scrollTop: _this.closest('.card').offset().top
-            }, "fast");
-            end_loader();
-        } else {
-            alert_toast("An error occurred", 'error');
-            end_loader();
-            console.log(resp);
-        }
-    }
-})
-        })
-    })
+                url: _base_url_ + "classes/Master.php?f=save_bookingspart2",
+                data: new FormData(_this[0]),
+                cache: false,
+                contentType: false,
+                processData: false,
+                method: 'POST',
+                dataType: 'json',
+                error: function(err) {
+                    console.log(err);
+                    alert_toast("An error occurred", 'error');
+                    end_loader();
+                },
+                success: function(resp) {
+                    if (typeof resp == 'object' && resp.status == 'success') {
+                        end_loader();
+                        $('#uni_modal').modal('hide');
+                        setTimeout(() => {
+                            uni_modal('', 'success_booking.php');
+                        }, 500);
+                    } else if (resp.status == 'failed' && !!resp.msg) {
+                        const el = $('<div>').addClass("alert alert-danger err-msg").text(resp.msg);
+                        _this.prepend(el);
+                        el.show('slow');
+                        $("html, body").animate({
+                            scrollTop: _this.closest('.card').offset().top
+                        }, "fast");
+                        end_loader();
+                    } else {
+                        alert_toast("An error occurred", 'error');
+                        end_loader();
+                        console.log(resp);
+                    }
+                }
+            });
+        });
+    });
 </script>

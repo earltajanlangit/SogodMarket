@@ -88,6 +88,8 @@
 								<div class="dropdown-menu" role="menu">
 									<a class="dropdown-item view_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-th-list text-dark"></span> View Details</a>
 									<div class="dropdown-divider"></div>
+									<a class="dropdown-item view_payments" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-th-list text-dark"></span> View Payments</a> <!-- New View Payments action -->
+									<div class="dropdown-divider"></div>
 									<a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
 								</div>
 							</td>
@@ -98,6 +100,7 @@
 		</div>
 	</div>
 </div>
+
 <script>
 	$(document).ready(function(){
 		$('.delete_data').click(function(){
@@ -106,8 +109,13 @@
 		$('.view_data').click(function(){
 			uni_modal('Booking Details','bookings/view_booking.php?id='+$(this).attr('data-id'),'mid-large')
 		})
+		$('.view_payments').click(function(){
+			// Open a modal or page to view payments
+			uni_modal('View Payments', 'bookings/view_payments.php?id=' + $(this).attr('data-id'), 'mid-large');
+		})
 		$('.table').dataTable();
 	})
+
 	function delete_booking($id){
 		start_loader();
 		$.ajax({

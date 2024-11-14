@@ -62,8 +62,8 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                 <input type="text" pattern="[0-9]+" name="quantity" id="quantity" class="form-control form no-resize text-right" value="<?php echo isset($quantity) ? $quantity : 0; ?>" required>
             </div>
             <div class="form-group">
-                <label for="daily_rate" class="control-label">Daily Rate</label>
-                <input type="text" pattern="[0-9]+" name="daily_rate" id="daily_rate" class="form-control form no-resize text-right" value="<?php echo isset($daily_rate) ? $daily_rate : 0; ?>" required>
+                <label for="monthly_rate" class="control-label">Monthly Rate</label>
+                <input type="text" pattern="[0-9]+" name="monthly_rate" id="monthly_rate" class="form-control form no-resize text-right" value="<?php echo isset($monthly_rate) ? $monthly_rate : 0; ?>" required>
             </div>
             <div class="form-group">
 				<label for="description" class="control-label">Description</label>

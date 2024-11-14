@@ -314,111 +314,145 @@ Class Master extends DBConnection {
 	function save_bookingspart2(){
 		extract($_POST);
 		$data = "";
-		if (!isset($client_id)) {
-			$_POST['client_id'] = $_SESSION['id'];
-		}
-
-		$meeting_schedule = date('Y-m-d H:i:s', strtotime('+1 week'));
-		$_POST['meeting_schedule'] = $meeting_schedule; // Add meeting_schedule to $_POST
 	
-		foreach ($_POST as $k => $v) {
-			if (!in_array($k, array('id', 'description'))) {
-				if (!empty($data)) $data .= ",";
-				$data .= " `{$k}`='{$v}' ";
-			}
-		}
-		if (empty($id)) {
-			$sql = "INSERT INTO `rent_list` set {$data} ";
-			$save = $this->conn->query($sql);
-		} else {
-			$sql = "UPDATE `rent_list` set {$data} where id = '{$id}' ";
-			$save = $this->conn->query($sql);
-		}
-		if($save){
-			$resp['status'] = 'success';
-			if(!empty($id))
-				$this->settings->set_flashdata('success',"Rental Booking successfully updated.");
-				// Sending SMS Notification Using Twilio
-			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application is Successfully sent. Please Visit our office until $meeting_schedule ";
-			$account_id = "AC4fafee2b5eecc224a18fe740a9123df2";
-			$auth_token = "e287cd99a0befe9a246bdf57759c8cc7";
-			$client = new Client($account_id, $auth_token);
-		 	$twilio_number = "+12093754713";
-		 	$number = "+63 936 064 8398";
-	 
-			$client->messages->create($number, [
-		 'from' => $twilio_number,
-		 'body' => $message 	
-	 ]);
-			//  end of SMS Notification Using Twilio
-			
-		}else{
-			$resp['status'] = 'failed';
-			$resp['err'] = $this->conn->error."[{$sql}]";
-		}
-		return json_encode($resp);
-	}
-	function save_booking() {
-		extract($_POST);
-		$data = "";
+		// If client_id is not set, default to session's client_id
 		if (!isset($client_id)) {
 			$_POST['client_id'] = $_SESSION['id'];
 		}
+	
+		// Schedule meeting for one week later
+		$meeting_schedule = date('Y-m-d H:i:s', strtotime('+1 week'));
+		$_POST['meeting_schedule'] = $meeting_schedule;
+	
+		// Dynamically build the data string for the SQL query
 		foreach ($_POST as $k => $v) {
+			// Exclude 'id' and 'description' from being included in the data string
 			if (!in_array($k, array('id', 'description'))) {
 				if (!empty($data)) $data .= ",";
-				$data .= " `{$k}`='{$v}' ";
+				// Ensure data is properly escaped to prevent SQL injection
+				$data .= " `{$k}`='" . $this->conn->real_escape_string($v) . "' ";
 			}
 		}
+	
+		// Check if this is an insert or an update operation
 		if (empty($id)) {
-			$sql = "INSERT INTO `rent_list` set {$data} ";
+			// Insert new record into rent_list table
+			$sql = "INSERT INTO `rent_list` SET {$data}";
 			$save = $this->conn->query($sql);
 		} else {
-			$sql = "UPDATE `rent_list` set {$data} where id = '{$id}' ";
+			// Update existing record in rent_list table
+			$sql = "UPDATE `rent_list` SET {$data} WHERE id = '{$id}'";
 			$save = $this->conn->query($sql);
 		}
+	
+		// Check if the operation was successful
 		if ($save) {
 			$resp['status'] = 'success';
-			if (!empty($id)) {
-				$this->settings->set_flashdata('success', "Rental Booking successfully updated.");
-			} 
-				// Decrement the quantity of the bike if the status is Confirmed (1)
-				if (isset($status) && $status == 1) {
-					$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` - 1 WHERE `id` = '{$space_id}'";
-					$update = $this->conn->query($update_sql);
-                	$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Confirmed";
-         
-					if (!$update) {
-						$resp['status'] = 'failed';
-						$resp['err'] = $this->conn->error . "[{$update_sql}]";
-						return json_encode($resp);
-					}
-				} elseif ($status == 0){
-					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Pending";
-				}elseif ($status == 2){
-					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Cancelled";
-				}elseif ($status == 3){
-					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Done";
-				}
-				// Sending SMS Notification Using Twilio
-				    $account_id = "AC4fafee2b5eecc224a18fe740a9123df2";
-               		$auth_token = "e287cd99a0befe9a246bdf57759c8cc7";
-                	$client = new Client($account_id, $auth_token);
-                	$twilio_number = "+12093754713";
-                	$number = "+63 936 064 8398";
-                
-                	$client->messages->create($number, [
-                    'from' => $twilio_number,
-                    'body' => $message 	
-                ]);
-				// end of SMS Notification Using Twilio
-			
+	
+			// Send SMS notification using Twilio
+			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application has been submitted. Please visit our office by $meeting_schedule.";
+			$account_id = "ACf135ab5e39c48fcdbb605db4696c768c";
+			$auth_token = "b7b2584d341e89e744ea14b5f1ddec8e";
+			$client = new Client($account_id, $auth_token);
+			$twilio_number = "+12242315707";
+			$number = "+63 991 960 9412";
+	
+			// Send SMS using Twilio
+			$client->messages->create($number, [
+				'from' => $twilio_number,
+				'body' => $message
+			]);
+	
 		} else {
 			$resp['status'] = 'failed';
 			$resp['err'] = $this->conn->error . "[{$sql}]";
 		}
+	
+		// Return the response as JSON
 		return json_encode($resp);
 	}
+	
+	
+	
+	
+	function save_booking() {
+		extract($_POST);
+		$data = "";
+		
+		// Set client_id if not set
+		if (!isset($client_id)) {
+			$_POST['client_id'] = $_SESSION['id'];
+		}
+	
+		// Loop through POST data and build the data string for insertion or update
+		foreach ($_POST as $k => $v) {
+			if (!in_array($k, array('id', 'description'))) {
+				if (!empty($data)) $data .= ",";
+				$data .= " `{$k}`='{$v}' ";
+			}
+		}
+	
+		// If the ID is empty, perform INSERT; otherwise, perform UPDATE
+		if (empty($id)) {
+			// INSERT
+			$sql = "INSERT INTO `rent_list` set {$data} ";
+			$save = $this->conn->query($sql);
+		} else {
+			// UPDATE
+			$sql = "UPDATE `rent_list` set {$data} where id = '{$id}' ";
+			$save = $this->conn->query($sql);
+		}
+	
+		// Check if the save operation was successful
+		if ($save) {
+			$resp['status'] = 'success';
+			
+			if (!empty($id)) {
+				$this->settings->set_flashdata('success', "Rental Booking successfully updated.");
+			}
+	
+			// Decrement the quantity of the space if the status is Confirmed (1)
+			if (isset($status) && $status == 1) {
+				$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` - 1 WHERE `id` = '{$space_id}'";
+				$update = $this->conn->query($update_sql);
+	
+				if (!$update) {
+					$resp['status'] = 'failed';
+					$resp['err'] = $this->conn->error . "[{$update_sql}]";
+					return json_encode($resp);
+				}
+	
+				// Message for SMS
+				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Confirmed";
+			} elseif ($status == 0) {
+				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Pending";
+			} elseif ($status == 2) {
+				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Cancelled";
+			} elseif ($status == 3) {
+				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Done";
+			}
+	
+			// Send SMS Notification Using Twilio
+			$account_id = "ACf135ab5e39c48fcdbb605db4696c768c";
+			$auth_token = "b7b2584d341e89e744ea14b5f1ddec8e";
+			$client = new Client($account_id, $auth_token);
+			$twilio_number = "+12242315707";
+			$number = "+63 991 960 9412";  // Replace with actual recipient number
+	
+			$client->messages->create($number, [
+				'from' => $twilio_number,
+				'body' => $message
+			]);
+			// End of SMS Notification Using Twilio
+		} else {
+			// If save fails, return error response
+			$resp['status'] = 'failed';
+			$resp['err'] = $this->conn->error . "[{$sql}]";
+		}
+	
+		return json_encode($resp);
+	}
+	
 	function delete_booking(){
 		extract($_POST);
 		$del = $this->conn->query("DELETE FROM `rent_list` where id = '{$id}'");
