@@ -591,8 +591,155 @@ Class Master extends DBConnection {
 		$bookingCount = $query->fetch_assoc()['count'];
 		return $bookingCount;
 	}
+	public function add_document() {
+		// Set the response Content-Type header to JSON
+		header('Content-Type: application/json');
+	
+		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+			// Check if the user is logged in
+			if (!isset($_SESSION['id'])) {
+				echo json_encode(["success" => false, "message" => "User not logged in"]);
+				exit;
+			}
+	
+			// Check if the required files are provided
+			if (isset($_FILES['cedule']) && isset($_FILES['photo_id'])) {
+				// Handle file uploads
+				$ceduleFile = $_FILES['cedule'];
+				$photoIdFile = $_FILES['photo_id'];
+	
+				// Validate files
+				if ($ceduleFile['error'] !== UPLOAD_ERR_OK || $photoIdFile['error'] !== UPLOAD_ERR_OK) {
+					echo json_encode(["success" => false, "message" => "Error in file upload"]);
+					exit;
+				}
+	
+				// Validate file types (ensure only certain file types are allowed)
+				$allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+				if (!in_array($ceduleFile['type'], $allowedTypes) || !in_array($photoIdFile['type'], $allowedTypes)) {
+					echo json_encode(["success" => false, "message" => "Invalid file type. Only JPG, PNG, and PDF are allowed."]);
+					exit;
+				}
+	
+				// Define the upload directory
+				$uploadDir = "../uploads/documents/";
+	
+				// Create the directory if it doesn't exist
+				if (!file_exists($uploadDir)) {
+					if (!mkdir($uploadDir, 0777, true)) {
+						echo json_encode(["success" => false, "message" => "Failed to create upload directory"]);
+						exit;
+					}
+				}
+	
+				// Sanitize file names
+				$ceduleFileName = preg_replace("/[^a-zA-Z0-9\.\-_]/", "_", basename($ceduleFile["name"]));
+				$photoIdFileName = preg_replace("/[^a-zA-Z0-9\.\-_]/", "_", basename($photoIdFile["name"]));
+	
+				// Define the full file paths
+				$ceduleFilePath = $uploadDir . $ceduleFileName;
+				$photoIdFilePath = $uploadDir . $photoIdFileName;
+	
+				// Move the uploaded files to the target directory
+				if (move_uploaded_file($ceduleFile["tmp_name"], $ceduleFilePath) && move_uploaded_file($photoIdFile["tmp_name"], $photoIdFilePath)) {
+					// Optionally, save additional information like document description
+					$description = isset($_POST['document_description']) ? $_POST['document_description'] : '';
+	
+					// Check if the client_id already exists in the documents table
+					$stmt = $this->conn->prepare("SELECT id FROM documents WHERE client_id = ?");
+					$stmt->bind_param("s", $_SESSION['id']);
+					$stmt->execute();
+					$stmt->store_result();
+	
+					if ($stmt->num_rows > 0) {
+						// Update the existing record
+						$stmt->close();
+						$stmt = $this->conn->prepare("UPDATE documents SET cedule_file = ?, photo_id_file = ?, description = ? WHERE client_id = ?");
+						$stmt->bind_param("ssss", $ceduleFileName, $photoIdFileName, $description, $_SESSION['id']);
+					} else {
+						// Insert a new record
+						$stmt->close();
+						$stmt = $this->conn->prepare("INSERT INTO documents (client_id, cedule_file, photo_id_file, description) VALUES (?, ?, ?, ?)");
+						$stmt->bind_param("ssss", $_SESSION['id'], $ceduleFileName, $photoIdFileName, $description);
+					}
+	
+					if ($stmt->execute()) {
+						$stmt->close();
+						echo json_encode(["success" => true, "message" => "Document processed successfully!"]);
+					} else {
+						echo json_encode(["success" => false, "message" => "Failed to process document info"]);
+					}
+				} else {
+					echo json_encode(["success" => false, "message" => "Failed to move uploaded files"]);
+				}
+			} else {
+				echo json_encode(["success" => false, "message" => "Required files are missing"]);
+			}
+		} else {
+			echo json_encode(["success" => false, "message" => "Invalid request method"]);
+		}
+	}
 
-}
+
+	function save_payment() {
+		extract($_POST);  // Extract POST data
+		$data = "";  // Initialize the data string
+	
+		// Set client_id if not set
+		if (!isset($client_id)) {
+			$_POST['client_id'] = $_SESSION['id'];  // Assuming client_id comes from session
+		}
+	
+		// Loop through POST data and build the data string for insertion or update
+		foreach ($_POST as $k => $v) {
+			if (!in_array($k, array('id', 'description'))) {  // Exclude unnecessary fields
+				if (!empty($data)) $data .= ",";
+				$data .= " `{$k}`='{$v}' ";  // Build the data string for SQL
+			}
+		}
+	
+		
+			// INSERT operation
+			$sql = "INSERT INTO `payments` set {$data} ";
+			$save = $this->conn->query($sql);
+	
+			
+		// Check if the save operation was successful
+		if ($save) {
+			$resp['status'] = 'success';
+	
+			if (!empty($id)) {
+				$this->settings->set_flashdata('success', "Payment details successfully updated.");
+			}
+	
+			// Update payment status and rent_list if payment is confirmed
+			if (isset($status) && $status == 1) {
+				// Assuming you want to update rent_list with payment details
+				$update_sql = "UPDATE `rent_list` SET `payment_status` = 'Paid' WHERE `id` = '{$booking_id}'";
+				$update = $this->conn->query($update_sql);
+	
+				if (!$update) {
+					$resp['status'] = 'failed';
+					$resp['err'] = $this->conn->error . "[{$update_sql}]";
+					return json_encode($resp);
+				}
+	
+				// Payment confirmation message
+				$message = "Your payment has been successfully processed for booking #{$booking_id}.";
+			} else {
+				// If the payment is not confirmed, set a generic status message
+				$message = "Your payment status has been updated.";
+			}
+		} else {
+			// If save fails, return error response
+			$resp['status'] = 'failed';
+			$resp['err'] = $this->conn->error . "[{$sql}]";
+		}
+	
+		return json_encode($resp);
+	}
+	
+	}
 
 
 
@@ -648,6 +795,12 @@ switch ($action) {
 	break;
 	case 'fetch_booking_count':
 		echo $Master->fetch_booking_count();
+	break;
+	case 'add_document':
+		echo $Master->add_document();
+	break;
+	case 'save_payment':
+		echo $Master->save_payment();
 	break;
 	default:
 		// echo $sysset->index();

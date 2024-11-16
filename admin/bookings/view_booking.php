@@ -38,6 +38,19 @@ if(isset($space_id)){
     }
 }
 ?>
+<style>
+    .modal-dialog {
+        max-width: 90%; /* Adjust to fit your content width */
+    }
+    .modal-content {
+        max-height: 90vh; /* Ensure the modal fits within the viewport height */
+        overflow-y: auto; /* Enable scrolling if content overflows */
+    }
+    .img-fluid {
+        max-width: 100%; /* Ensure images fit within the modal */
+        height: auto;
+    }
+</style>
 <div class="container-fluid px-3 py-2">
     <div class="row">
         <div class="col-md-6">
@@ -80,6 +93,66 @@ if(isset($space_id)){
         ?>
         </div>
     </div>
+    <!-- View Documents Button -->
+            <div class="card-body">
+                <button type="button" class="btn btn-info btn-flat"  data-toggle="modal" data-target="#viewDocumentsModal">
+                    <i class="fa fa-file-alt"></i> View Documents
+                </button>
+            </div>
+
+    <!-- View Documents Modal -->
+<div class="modal fade" id="viewDocumentsModal" tabindex="-1" role="dialog" aria-labelledby="viewDocumentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewDocumentsModalLabel">Uploaded Documents</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Static Documents -->
+                <div class="row">
+                <?php 
+    $qry = $conn->query("SELECT * FROM documents WHERE client_id = '{$_SESSION['id']}' LIMIT 1");
+    $row = $qry->fetch_assoc(); // Fetching only one row
+?>
+<div class="modal-body">
+    <!-- Static Documents -->
+    <div class="row">
+        <!-- Cedule File -->
+        <div class="row">
+    <div class="col-12 pl-4"> <!-- Added padding-left using Bootstrap class -->
+        <h5>Cedule File</h5>
+        <img src="/SogodMarket/uploads/documents/<?php echo $row['cedule_file']; ?>" alt="Cedule File" class="img-fluid" />
+    </div>
+</div>
+
+<!-- Photo ID File -->
+<div class="row mt-4">
+    <div class="col-12 pl-4"> <!-- Added padding-left using Bootstrap class -->
+        <h5>Photo ID File</h5>
+        <img src="/SogodMarket/uploads/documents/<?php echo $row['photo_id_file']; ?>" alt="Photo ID File" class="img-fluid" />
+    </div>
+</div>
+
+<!-- Description -->
+<div class="col-12 mt-4 pl-4"> <!-- Added padding-left using Bootstrap class -->
+    <h5>Description</h5>
+    <p><?php echo htmlspecialchars($row['description']); ?></p>
+</div>
+
+    </div>
+</div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 
 <div class="modal-footer">

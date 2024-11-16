@@ -1,14 +1,14 @@
 <?php 
- $bikes = $conn->query("SELECT  b.*, c.category, bb.name as brand 
+$bikes = $conn->query("SELECT  b.*, c.category, bb.name as brand 
                         FROM `space_list` b 
                         INNER JOIN categories c ON b.category_id = c.id 
                         INNER JOIN space_type_list bb ON b.space_type_id = bb.id 
                         WHERE md5(b.id) = '{$_GET['id']}' ");
  
- if($bikes->num_rows > 0){
-     foreach($bikes->fetch_assoc() as $k => $v){
-         $$k = stripslashes($v);
-     }
+if($bikes->num_rows > 0){
+    foreach($bikes->fetch_assoc() as $k => $v){
+        $$k = stripslashes($v);
+    }
     $upload_path = base_app.'/uploads/'.$id;
 
     $img = "";
@@ -17,7 +17,7 @@
         if(isset($fileO[2]))
             $img = "uploads/".$id."/".$fileO[2];
     }
- }
+}
 ?>
 <section class="py-5">
     <div class="container px-4 px-lg-5 my-5">
@@ -55,6 +55,7 @@
         </div>
     </div>
 </section>
+
 <!-- Related items section-->
 <section class="py-5 bg-light">
     <div class="container px-4 px-lg-5 mt-5">
@@ -65,8 +66,11 @@
                                    FROM `space_list` b 
                                    INNER JOIN categories c ON b.category_id = c.id 
                                    INNER JOIN space_type_list bb ON b.space_type_id = bb.id 
-                                   WHERE b.status = 1 AND (b.category_id = '{$category_id}' OR b.space_type_id = '{$space_type_id}') 
-                                   AND b.id !='{$id}' ORDER BY rand() LIMIT 4 ");
+                                   WHERE b.status = 1 
+                                   AND (b.category_id = '{$category_id}' OR b.space_type_id = '{$space_type_id}') 
+                                   AND b.id !='{$id}' 
+                                   AND b.quantity > 0  -- Ensure quantity is greater than 0
+                                   ORDER BY rand() LIMIT 4 ");
             while($row = $bikes->fetch_assoc()):
         ?>
             <a class="col mb-5 text-decoration-none text-dark" href=".?p=view_bike&id=<?php echo md5($row['id']) ?>">
@@ -88,6 +92,7 @@
         </div>
     </div>
 </section>
+
 <script>
     $(function(){
         $('.view-image').click(function(){

@@ -71,12 +71,14 @@ $query = $stmt->get_result();
 </style>
 
 <script>
-    $(function(){
-        // Trigger the modal when 'Pay' button is clicked
+     $(function() {
+        // When the 'Make a Payment' button is clicked
         $('#payButton').click(function(){
-            // Open the payment form modal
-            uni_modal("Make a Payment", "./payments/pay_form.php?booking_id=<?php echo $id; ?>");
+            // Open the payment form modal by calling uni_modal
+            uni_modal("Make a Payment", "/sogodmarket/admin/bookings/pay_form.php?id=<?php echo $id; ?>");
         });
     });
+
+    
 </script>
 

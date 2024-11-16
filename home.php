@@ -36,7 +36,7 @@
                             <!-- bike name -->
                             <h5 class="fw-bolder"><?php echo $row['space_name'] ?></h5>
                             <!-- bike price -->
-                            <span><b>Daily Rate: </b><?php echo number_format($row['daily_rate']) ?></span>
+                            <span><b>Montly Rate: </b><?php echo number_format($row['monthly_rate']) ?></span>
                         </div>
                         <p class="m-0"><small>Space Type: <?php echo $row['brand'] ?></small><br>
                         <small><?php echo $row['category'] ?></small></p>

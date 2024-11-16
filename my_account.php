@@ -1,3 +1,8 @@
+<?php
+require_once('config.php');
+
+
+?>  
 <style>
     .badge-light {
         color: black;
@@ -83,14 +88,107 @@
 
             <!-- View Documents Button -->
             <div class="card-body">
-                <button type="button" class="btn btn-info btn-flat" id="view-documents-btn">
+                <button type="button" class="btn btn-info btn-flat" data-toggle="modal" data-target="#addDocumentModal">
                     <i class="fa fa-file-alt"></i> Add Documents
                 </button>
-                <button type="button" class="btn btn-info btn-flat" id="view-documents-btn">
+                <button type="button" class="btn btn-info btn-flat"  data-toggle="modal" data-target="#viewDocumentsModal">
                     <i class="fa fa-file-alt"></i> View Documents
                 </button>
             </div>
         </div>
+
+        <!-- View Documents Modal -->
+<div class="modal fade" id="viewDocumentsModal" tabindex="-1" role="dialog" aria-labelledby="viewDocumentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewDocumentsModalLabel">Uploaded Documents</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Static Documents -->
+                <div class="row">
+                <?php 
+    $qry = $conn->query("SELECT * FROM documents WHERE client_id = '{$_SESSION['id']}' LIMIT 1");
+    $row = $qry->fetch_assoc(); // Fetching only one row
+?>
+<div class="modal-body">
+    <!-- Static Documents -->
+    <div class="row">
+        <!-- Cedule File -->
+        <div class="row">
+            <div class="col-12">
+                <h5>Cedule File</h5>
+                <img src="/SogodMarket/uploads/documents/<?php echo $row['cedule_file']; ?>" alt="Cedule File" class="img-fluid" />
+            </div>
+        </div>
+
+        <!-- Photo ID File -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <h5>Photo ID File</h5>
+                <img src="/SogodMarket/uploads/documents/<?php echo $row['photo_id_file']; ?>" alt="Photo ID File" class="img-fluid" />
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="col-12 mt-4">
+            <h5>Description</h5>
+            <p><?php echo htmlspecialchars($row['description']); ?></p>
+        </div>
+    </div>
+</div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+        <!-- Add Document Modal -->
+<div class="modal fade" id="addDocumentModal" tabindex="-1" role="dialog" aria-labelledby="addDocumentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addDocumentModalLabel">Upload Document</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="" method="POST" id="addDocumentForm">
+                <div class="modal-body">
+                    <!-- Cedule File Input -->
+                    <div class="form-group">
+                        <label for="cedule">Cedule</label>
+                        <input type="file" class="form-control-file" id="cedule" name="cedule" required>
+                    </div>
+
+                    <!-- Photo Copy Valid ID File Input -->
+                    <div class="form-group">
+                        <label for="photo_id">Photo Copy of Valid ID</label>
+                        <input type="file" class="form-control-file" id="photo_id" name="photo_id" required>
+                    </div>
+
+                    <!-- Description (Optional) -->
+                    <div class="form-group">
+                        <label for="document_description">Description (Optional)</label>
+                        <textarea class="form-control" id="document_description" name="document_description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
         <!-- Rest of the content remains the same -->
         <div class="card rounded-0">
@@ -130,8 +228,8 @@
                             <td class="text-center"><?php echo $i++; ?></td>
                             <td><?php echo date("Y-m-d H:i", strtotime($row['date_created'])) ?></td>
                             <td>
-                                <small><span class="text-muted">Pick up:</span> <?php echo date("Y-m-d", strtotime($row['date_start'])) ?></small><br>
-                                <small><span class="text-muted">Return: </span> <?php echo date("Y-m-d", strtotime($row['date_end'])) ?></small>
+                                <small><span class="text-muted">Start Date:</span> <?php echo date("Y-m-d", strtotime($row['date_start'])) ?></small><br>
+                                <small><span class="text-muted">End Date: </span> <?php echo date("Y-m-d", strtotime($row['date_end'])) ?></small>
                             </td>
                             <td><?php echo $row['client'] ?></td>
                             <td class="text-center">
@@ -166,48 +264,83 @@
         </div>
 
         <!-- Payment History Section -->
-<div class="card rounded-0 mt-4">
-    <div class="card-body">
-        <div class="w-100 justify-content-between d-flex">
-            <h4><b>Payment History</b></h4>
+        <div class="card rounded-0 mt-4">
+            <div class="card-body">
+                <div class="w-100 justify-content-between d-flex">
+                    <h4><b>Payment History</b></h4>
+                </div>
+                <hr class="border-warning">
+                
+                <!-- Payment History Table -->
+                <table class="table table-striped text-dark">
+                    <colgroup>
+                        <col width="5%">
+                        <col width="20%">
+                        <col width="40%">
+                        <col width="20%">
+                    </colgroup>
+                    <thead>
+                        <tr class="bg-navy text-white">
+                            <th>#</th>
+                            <th>Date Paid</th>
+                            <th>Amount Paid</th>
+                            <th>Payment method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                            $qry = $conn->query("SELECT * FROM payments WHERE client_id = '{$_SESSION['id']}' ORDER BY date_paid DESC");
+                            while ($row = $qry->fetch_assoc()):
+                        ?>
+                        <tr>
+                            <td><?php echo $row['id'] ?></td>
+                            <td><?php echo date("Y-m-d H:i", strtotime($row['date_paid'])) ?></td>
+                            <td><?php echo number_format($row['amount_paid'], 2) ?></td>
+                            <td><?php echo $row['payment_method'] ?></td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <hr class="border-warning">
-        
-        <!-- Payment History Table -->
-        <table class="table table-striped text-dark">
-            <colgroup>
-                <col width="5%">
-                <col width="20%">
-                <col width="40%">
-                <col width="20%">
-            </colgroup>
-            <thead>
-                <tr class="bg-navy text-white">
-                    <th>#</th> <!-- Add this column header for number -->
-                    <th>Date Paid</th>
-                    <th>Amount Paid</th>
-                    <th>Payment method</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php 
-                    $qry = $conn->query("SELECT * FROM payments WHERE client_id = '{$_SESSION['id']}' ORDER BY date_paid DESC");
-                    $i = 1; // Initialize the counter variable
-                    while ($row = $qry->fetch_assoc()):
-                ?>
-                <tr>
-                    <td><?php echo $i++; ?></td> <!-- Display the row number -->
-                    <td><?php echo date("Y-m-d", strtotime($row['date_paid'])) ?></td>
-                    <td><?php echo number_format($row['amount_paid'], 2) ?></td>
-                    <td><?php echo $row['payment_method'] ?></td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
     </div>
 </section>
+<script>
+    $(document).ready(function() {
+    // Handle the form submission
+    $('#addDocumentForm').submit(function(e) {
+        e.preventDefault(); // Prevent the default form submission
 
+        // Create a FormData object to send the form data
+        var formData = new FormData(this);
 
+        // Perform AJAX request
+        $.ajax({
+    url: _base_url_ + "classes/Master.php?f=add_document",  // URL path to submit the form
+    type: 'POST',
+    data: formData,
+    processData: false,  // Prevent jQuery from automatically transforming the data into a query string
+    contentType: false,  // Let the browser set the content type
+    success: function(response) {
+        // Ensure the response is a JSON object
+        if (typeof response === "string") {
+            response = JSON.parse(response);
+        }
 
+        if (response.success) {
+            alert(response.message);  // Success message from the server
+            $('#addDocumentModal').modal('hide'); // Close the modal
+            window.location.href = "http://localhost/sogodmarket/?p=my_account"; // Redirect to the desired page
+        } else {
+            alert(response.message);  // Failure message from the server
+        }
+    },
+    error: function(xhr, status, error) {
+        // Handle error
+        alert("An error occurred. Please try again.");
+    }
+});
+
+    });
+});
+</script>
