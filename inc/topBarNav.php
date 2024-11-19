@@ -49,10 +49,11 @@
                       <?php if(!isset($_SESSION['id'])): ?>
                         <button class="btn btn-outline-light ml-2" id="login-btn" type="button">Login</button>
                         <?php else: ?>
-                            <a href="./?p=my_account" class="text-light  nav-link"><b> Hi, <?php echo $_SESSION['name']?>!</b></a>
+                          <a href="./?p=my_account" class="text-light nav-link"><b> Hi, <?php echo $_SESSION['firstname'] . ' ' . $_SESSION['lastname']; ?>!</b></a>
+
                             <a href="logout.php" class="text-light  nav-link"><i class="fa fa-sign-out-alt"></i></a>
                         <?php endif; ?>
-                    </div>
+                    </div> 
                 </div>
             </div>
         </nav>

@@ -12,69 +12,75 @@
 	</div>
 	<div class="card-body">
 		<div class="container-fluid">
-        <div class="container-fluid">
-			<table class="table table-bordered table-striped">
-				<colgroup>
-					<col width="5%">
-					<col width="15%">
-					<col width="25%">
-					<col width="30%">
-					<col width="10%">
-					<col width="15%">
-				</colgroup>
-				<thead>
-					<tr class="bg-navy disabled">
-						<th>#</th>
-						<th>Client ID</th>
-						<th>Name</th>
-						<th>Contact Number</th>
-						<th>Gender</th>
-						<th>Address</th>
-						<th>Email</th>
-						<th>Password</th>
-						<th>QR CODE</th>
-						<th>Action</th>
-						
-						
-					</tr>
-				</thead>
-				<tbody>
-					<?php 
-					$i = 1;
-						$qry = $conn->query("SELECT * from `clients` order by `id` asc ");
+			<div class="container-fluid">
+				<table class="table table-bordered table-striped">
+					<colgroup>
+						<col width="5%">
+						<col width="15%">
+						<col width="25%">
+						<col width="15%">
+						<col width="10%">
+						<col width="20%">
+						<col width="20%">
+						<col width="20%">
+						<col width="20%">
+						<col width="15%">
+					</colgroup>
+					<thead>
+						<tr class="bg-navy disabled">
+							<th>#</th>
+							<th>Client ID</th>
+							<th>Name</th>
+							<th>Contact Number</th>
+							<th>Gender</th>
+							<th>Address</th>
+							<th>Email</th>
+							<th>Password</th>
+							<th>QR Code</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php 
+						$i = 1;
+						$qry = $conn->query("
+							SELECT c.*, r.status, DATEDIFF(r.date_end, CURDATE()) as remaining_days 
+							FROM `clients` c
+							JOIN `rent_list` r ON c.id = r.client_id
+							WHERE r.status = 1 AND DATEDIFF(r.date_end, CURDATE()) > 0
+							ORDER BY c.id ASC
+						");
 						while($row = $qry->fetch_assoc()):
 							foreach($row as $k=> $v){
 								$row[$k] = trim(stripslashes($v));
 							}
-                            
-					?>
-						<tr>
-							<td class="text-center"><?php echo $i++; ?></td>
-							<td><?php echo $row['id'] ?></td>
-							<td><?php echo $row['firstname'] . ' ' . $row['lastname'];  ?></td>
-							<td><?php echo $row['contact'] ?></td>
-							<td><?php echo $row['gender'] ?></td>
-							<td><?php echo $row['address'] ?></td>
-							<td><?php echo $row['email'] ?></td>
-							<td><?php echo $row['password'] ?></td>
-							<td><?php echo $row['generated_code'] ?></td>
-							
-							<td align="center">
-								 <button type="button" class="btn btn-flat btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
-				                  		Action
-				                    <span class="sr-only">Toggle Dropdown</span>
-				                  </button>
-				                  <div class="dropdown-menu" role="menu">
-				                    <a class="dropdown-item edit_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-edit text-primary"></span> Edit</a>
-				                    <div class="dropdown-divider"></div>
-				                    <a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
-				                  </div>
-							</td>
-						</tr>
-					<?php endwhile; ?>
-				</tbody>
-			</table>
-		</div>
+						?>
+							<tr>
+								<td class="text-center"><?php echo $i++; ?></td>
+								<td><?php echo $row['id'] ?></td>
+								<td><?php echo $row['firstname'] . ' ' . $row['lastname']; ?></td>
+								<td><?php echo $row['contact'] ?></td>
+								<td><?php echo $row['gender'] ?></td>
+								<td><?php echo $row['address'] ?></td>
+								<td><?php echo $row['email'] ?></td>
+								<td><?php echo $row['password'] ?></td>
+								<td><?php echo $row['generated_code'] ?></td>
+								<td align="center">
+									<button type="button" class="btn btn-flat btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
+										Action
+										<span class="sr-only">Toggle Dropdown</span>
+									</button>
+									<div class="dropdown-menu" role="menu">
+										<a class="dropdown-item edit_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-edit text-primary"></span> Edit</a>
+										<div class="dropdown-divider"></div>
+										<a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
+									</div>
+								</td>
+							</tr>
+						<?php endwhile; ?>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 </div>
@@ -93,7 +99,7 @@
 		$('.table td,.table th').addClass('px-2 py-1')
 		$('.table').dataTable({
 			columnDefs: [
-				{ targets: [4, 5], orderable: false}
+				{ targets: [4, 5], orderable: false }
 			],
 			initComplete:function(settings, json){
 				$('.table td,.table th').addClass('px-2 py-1')
@@ -113,7 +119,7 @@
 				end_loader();
 			},
 			success:function(resp){
-				if(typeof resp== 'object' && resp.status == 'success'){
+				if(typeof resp == 'object' && resp.status == 'success'){
 					location.reload();
 				}else{
 					alert_toast("An error occured.",'error');

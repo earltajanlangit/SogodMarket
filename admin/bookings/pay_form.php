@@ -20,6 +20,8 @@ if (isset($_GET['id'])) {
                 <?php if (isset($rent_data)): ?>
                     <p><b>Space:</b> <?php echo htmlspecialchars($rent_data['space_id']); ?></p>
                     <p><b>Client ID:</b> <?php echo htmlspecialchars($rent_data['client_id']); ?></p>
+                    <!-- Include this inside your form -->
+                    <input type="hidden" name="client_id" value="<?php echo htmlspecialchars($rent_data['client_id']); ?>">
                 <?php endif; ?>
 
                 <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
@@ -29,6 +31,8 @@ if (isset($_GET['id'])) {
                     <label for="amount_paid" class="control-label">Amount to Pay</label>
                     <input type="number" name="amount_paid" id="amount_paid" class="form-control form-control-sm rounded-0 text-right" min="0" step="0.01" required>
                 </div>
+                
+                
 
                 <!-- Payment Date -->
                 <div class="form-group">

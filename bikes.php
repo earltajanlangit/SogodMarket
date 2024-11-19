@@ -2,22 +2,22 @@
 $title = "";
 $sub_title = "";
 if(isset($_GET['c'])){
-    $cat_qry = $conn->query("SELECT * FROM categories where md5(id) = '{$_GET['c']}'");
+    $cat_qry = $conn->query("SELECT * FROM categories WHERE md5(id) = '{$_GET['c']}'");
     if($cat_qry->num_rows > 0){
-        $result =$cat_qry->fetch_assoc();
+        $result = $cat_qry->fetch_assoc();
         $title = $result['category'];
         $cat_description = $result['description'];
     }
 }
 if(isset($_GET['s'])){
-    $sub_cat_qry = $conn->query("SELECT * FROM space_type_list where md5(id) = '{$_GET['s']}'");
+    $sub_cat_qry = $conn->query("SELECT * FROM space_type_list WHERE md5(id) = '{$_GET['s']}'");
     if($sub_cat_qry->num_rows > 0){
-        $result =$sub_cat_qry->fetch_assoc();
+        $result = $sub_cat_qry->fetch_assoc();
         $title = $result['name'];
     }
 }
 ?>
-<!-- Header-->
+<!-- Header -->
 <header class="bg-dark py-5" id="main-header">
     <div class="container px-4 px-lg-5 my-5">
         <div class="text-center text-white">
@@ -26,52 +26,59 @@ if(isset($_GET['s'])){
         </div>
     </div>
 </header>
-<!-- Section-->
+<!-- Section -->
 <section class="py-5">
     <div class="container">
         <div class="row">
-            <div class="<?php echo (isset($_GET['c']))? 'col-md-9': 'col-md-12' ?>">
+            <div class="<?php echo (isset($_GET['c'])) ? 'col-md-9' : 'col-md-12' ?>">
                 <?php 
                     if(isset($_GET['search'])){
                         echo "<h4 class='text-center'><b>Search Result for '".$_GET['search']."'</b></h4><hr/>";
                     }
                 ?>
                 <div class="row gx-2 gx-lg-2 row-cols-1 row-cols-sm-1 row-cols-md-3 row-cols-xl-4">
-                
                     <?php 
                         $whereData = "";
                         if(isset($_GET['search'])){
-                            if(!empty($whereData) ) $whereData.= " and ";
+                            if(!empty($whereData)) $whereData .= " and ";
                             $whereData .= " and (b.space_name LIKE '%{$_GET['search']}%' or c.category LIKE '%{$_GET['search']}%' or b.description LIKE '%{$_GET['search']}%' or bb.name LIKE '%{$_GET['search']}%')";
                         }
                         if(isset($_GET['c'])){
-                            if(!empty($whereData) ) $whereData.= " and ";
+                            if(!empty($whereData)) $whereData .= " and ";
                             $whereData .= " and (md5(category_id) = '{$_GET['c']}')";
                         }
                         if(isset($_GET['s'])){
-                            if(!empty($whereData) ) $whereData.= " and ";
+                            if(!empty($whereData)) $whereData .= " and ";
                             $whereData .= " and (md5(space_type_id) = '{$_GET['s']}')";
                         }
-                        $sql = "SELECT b.*,c.category, bb.name as brand from `space_list` b inner join categories c on b.category_id = c.id inner join space_type_list bb on b.space_type_id = bb.id  where b.status = 1 {$whereData} order by rand()";
+                        $sql = "SELECT b.*, c.category, bb.name as brand 
+                                FROM `space_list` b 
+                                INNER JOIN categories c ON b.category_id = c.id 
+                                INNER JOIN space_type_list bb ON b.space_type_id = bb.id  
+                                WHERE b.status = 1 AND b.quantity > 0 {$whereData} 
+                                ORDER BY rand()";
                         $bikes = $conn->query($sql);
                         while($row = $bikes->fetch_assoc()):
                     ?>
                     <a class="col-md-12 mb-5 text-decoration-none text-dark" href=".?p=view_bike&id=<?php echo md5($row['id']) ?>">
                         <div class="card bike-item">
-                            <!-- bike image-->
+                            <!-- bike image -->
                             <img class="card-img-top w-100" src="<?php echo validate_image('uploads/thumbnails/'.$row['id'].'.png') ?>" loading="lazy" alt="..." />
-                            <!-- bike details-->
+                            <!-- bike details -->
                             <div class="card-body p-4">
                                 <div class="">
-                                    <!-- bike name-->
+                                    <!-- bike name -->
                                     <h5 class="fw-bolder"><?php echo $row['space_name'] ?></h5>
-                                    <!-- bike price-->
-                                <span><b>Daily Rate: </b><?php echo number_format($row['daily_rate']) ?></span>
+                                    <!-- bike price -->
+                                    <span><b>Monthly Rate: </b><?php echo number_format($row['monthly_rate']) ?></span>
                                 </div>
-                                <p class="m-0"><small>Space Type: <?php echo $row['brand'] ?></small> <br>
-                                <small><?php echo $row['category'] ?></small>
+                                <p class="m-0">
+                                    <small>Space Type: <?php echo $row['brand'] ?></small> <br>
+                                    <small><?php echo $row['category'] ?></small>
                                 </p>
-                                <p class="m-0 truncate-3"><small><?php echo strip_tags(html_entity_decode(stripslashes($row['description']))) ?></small></p>
+                                <p class="m-0 truncate-3">
+                                    <small><?php echo strip_tags(html_entity_decode(stripslashes($row['description']))) ?></small>
+                                </p>
                             </div>
                         </div>
                     </a>

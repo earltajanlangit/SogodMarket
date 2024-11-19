@@ -5,20 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Login</title>
     <style>
-       #uni_modal .modal-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-}
+        #uni_modal .modal-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
 
-#uni_modal .modal-content>.modal-footer, 
-#uni_modal .modal-content>.modal-header {
-    display: none;
-
-}
-        
+        #uni_modal .modal-content>.modal-footer, 
+        #uni_modal .modal-content>.modal-header {
+            display: none;
+        }
         
         .login-container {
             background-color: #ffffff;
@@ -61,19 +59,33 @@
     </style>
 </head>
 
+<body>
     <div class="main">
         <!-- Login Area -->
         <div class="login-container">
-            <h2>Welcome Back!</h2>
-            <p>Login through QR code scanner.</p>
-            <video id="interactive" class="viewport" width="100%" style="display: none;"></video>
-            <button id="back-btn" class="btn btn-primary "> Back </button>
-            <div class="qr-detected-container">
-                <h4>QR Code Detected!</h4>
-                <form action="./endpoint/login.php" method="POST">
-                    <input type="hidden" id="detected-qr-code" name="qr-code">
-                    <button type="submit" class="btn btn-dark">Login</button>
-                </form>
+            <div class="login-form" id="loginForm">
+                <h2 class="text-center">Welcome Back!</h2>
+                <p class="text-center">Login through QR code scanner or upload your QR code image.</p>
+
+                <!-- QR Scanner Video -->
+                <video id="interactive" class="viewport" width="415"></video>
+
+                <!-- QR Code Scanner Area -->
+                <div class="qr-detected-container" style="display: none;">
+                    <form action="./endpoint/login.php" method="POST">
+                        <h4 class="text-center">QR Code Detected!</h4>
+                        <input type="hidden" id="detected-qr-code" name="qr-code">
+                        <button type="submit" class="btn btn-dark form-control">Login</button>
+                    </form>
+                </div>
+
+                <!-- Upload QR Code Area -->
+                <div class="qr-upload-container">
+                    <input type="file" id="qrFileInput" class="form-control" accept="image/*">
+                    <button type="button" class="btn btn-dark form-control" onclick="processQRCode()">Upload</button>
+                </div>
+
+                <button id="back-login-btn" class="btn btn-primary btn-flat">Back</button>
             </div>
         </div>
     </div>
@@ -84,6 +96,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
     <!-- Instascan JS -->
     <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+
+    <!-- Add jsQR library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
 
     <script>
         let scanner;
@@ -139,13 +154,45 @@
                 });
         }
 
+        function processQRCode() {
+            const fileInput = document.getElementById('qrFileInput');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        context.drawImage(img, 0, 0);
+                        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                        const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+                        if (code) {
+                            console.log('QR Code data:', code.data);
+                            $("#detected-qr-code").val(code.data);
+                            $(".qr-detected-container").show();
+                        } else {
+                            alert('No QR code found in the image!');
+                        }
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please upload a QR code image.');
+            }
+        }
+
         $(document).ready(function() {
             startScanner(); // Automatically start the scanner when the page loads
 
-            $('#back-btn').click(function() {
+            $('#back-login-btn').click(function() {
                 console.log('Back button clicked.');
                 window.location.href = "index.php";
-                // uni_modal("", "login.php", "mid-large");
             });
         });
     </script>

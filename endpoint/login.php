@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // Prepare and execute the SQL statement
-        $stmt = $conn->prepare("SELECT `generated_code`,CONCAT(`firstname`, ' ', `lastname`) AS `name`, `id` FROM `clients` WHERE `generated_code` = :generated_code");
+        $stmt = $conn->prepare("SELECT * FROM `clients` WHERE `generated_code` = :generated_code");
         $stmt->bindParam(':generated_code', $qrCode);
         $stmt->execute();
 

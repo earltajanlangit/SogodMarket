@@ -8,6 +8,7 @@
 	alert_toast("<?php echo $_settings->flashdata('error') ?>",'error')
 </script>
 <?php endif; ?>
+
 <div class="card card-outline card-primary">
 	<div class="card-header">
 		<h3 class="card-title">List of Bookings</h3>
@@ -44,9 +45,8 @@
 				<tbody>
 					<?php 
 					$i = 1;
-					// Updated query to join rent_list, space_list, and categories tables and fetch address
 					$qry = $conn->query("SELECT r.*, CONCAT(c.firstname, ' ', c.lastname) as client, 
-											s.space_name, cat.category, r.meeting_schedule, c.address 
+											s.space_name, cat.category, r.meeting_schedule, c.address, c.id as client_id 
 											FROM `rent_list` r 
 											INNER JOIN clients c ON c.id = r.client_id 
 											INNER JOIN space_list s ON s.id = r.space_id 
@@ -90,10 +90,67 @@
 									<div class="dropdown-divider"></div>
 									<a class="dropdown-item view_payments" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-th-list text-dark"></span> View Payments</a> <!-- New View Payments action -->
 									<div class="dropdown-divider"></div>
+									<a class="dropdown-item view_documents" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-file-alt text-dark"></span> View Documents</a> <!-- New View Documents action -->
+									<div class="dropdown-divider"></div>
 									<a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
 								</div>
+
 							</td>
 						</tr>
+						
+						<!-- View Documents Modal -->
+						<div class="modal fade" id="viewDocumentsModal-<?php echo $row['id']; ?>" tabindex="-1" role="dialog" aria-labelledby="viewDocumentsModalLabel" aria-hidden="true">
+							<div class="modal-dialog modal-lg" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h5 class="modal-title" id="viewDocumentsModalLabel">Uploaded Documents</h5>
+										<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+											<span aria-hidden="true">&times;</span>
+										</button>
+									</div>
+									<div class="modal-body">
+										<div class="row">
+											<?php 
+											$docQry = $conn->query("SELECT * FROM documents WHERE client_id = {$row['client_id']} LIMIT 1");
+											$docRow = $docQry->fetch_assoc();
+											?>
+											<?php if ($docRow): ?>
+											<!-- Cedule File -->
+											<div class="row">
+												<div class="col-12 pl-4"> <!-- Added padding-left using Bootstrap class -->
+													<h5>Cedule File</h5>
+													<img src="/SogodMarket/uploads/documents/<?php echo $docRow['cedule_file']; ?>" alt="Cedule File" class="img-fluid" />
+												</div>
+											</div>
+
+											<!-- Photo ID File -->
+											<div class="row mt-4">
+												<div class="col-12 pl-4"> <!-- Added padding-left using Bootstrap class -->
+													<h5>Photo ID File</h5>
+													<img src="/SogodMarket/uploads/documents/<?php echo $docRow['photo_id_file']; ?>" alt="Photo ID File" class="img-fluid" />
+												</div>
+											</div>
+
+											<!-- Description -->
+											<div class="col-12 mt-4 pl-4"> <!-- Added padding-left using Bootstrap class -->
+												<h5>Description</h5>
+												<p><?php echo htmlspecialchars($docRow['description']); ?></p>
+											</div>
+											<?php else: ?>
+											<!-- No Documents Found Message -->
+											<div class="col-12 text-center">
+												<p class="text-danger">No documents found for this client.</p>
+											</div>
+											<?php endif; ?>
+										</div>
+									</div>
+									<div class="modal-footer">
+										<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									</div>
+								</div>
+							</div>
+						</div>
+
 					<?php endwhile; ?>
 				</tbody>
 			</table>
@@ -103,6 +160,10 @@
 
 <script>
 	$(document).ready(function(){
+		$('.view_documents').click(function(){
+			var bookingId = $(this).attr('data-id');
+			$('#viewDocumentsModal-' + bookingId).modal('show'); // Show the View Documents Modal
+		});
 		$('.delete_data').click(function(){
 			_conf("Are you sure to delete this booking permanently?","delete_booking",[$(this).attr('data-id')])
 		})
@@ -110,30 +171,22 @@
 			uni_modal('Booking Details','bookings/view_booking.php?id='+$(this).attr('data-id'),'mid-large')
 		})
 		$('.view_payments').click(function(){
-			// Open a modal or page to view payments
 			uni_modal('View Payments', 'bookings/view_payments.php?id=' + $(this).attr('data-id'), 'mid-large');
 		})
-		$('.table').dataTable();
 	})
 
-	function delete_booking($id){
-		start_loader();
+	function delete_booking(id){
+		start_load()
 		$.ajax({
-			url:_base_url_+"classes/Master.php?f=delete_booking",
+			url:_base_url_+'classes/Master.php?f=delete_booking',
 			method:"POST",
-			data:{id: $id},
-			dataType:"json",
-			error: err => {
-				console.log(err);
-				alert_toast("An error occurred.", 'error');
-				end_loader();
-			},
-			success:function(resp) {
-				if(typeof resp == 'object' && resp.status == 'success') {
-					location.reload();
-				} else {
-					alert_toast("An error occurred.", 'error');
-					end_loader();
+			data:{id:id},
+			success:function(resp){
+				if(resp == 1){
+					alert_toast("Booking successfully deleted.",'success')
+					setTimeout(function(){
+						location.reload()
+					},1500)
 				}
 			}
 		})

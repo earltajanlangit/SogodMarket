@@ -50,54 +50,64 @@ class Login extends DBConnection {
         }
 
         // Query the database for user credentials
-        $qry = $this->conn->query("SELECT * FROM clients WHERE email = '$email' AND password = MD5('$password')");
+       // Query the database for user credentials
+$qry = $this->conn->query("SELECT * FROM clients WHERE email = '$email'");
 
-        if ($qry->num_rows > 0) {
-            // Fetch user data
-            $user = $qry->fetch_array();
-            $name = $user['firstname'] . ' ' . $user['lastname'];
+if ($qry->num_rows > 0) {
+    // Fetch user data
+    $user = $qry->fetch_array();
 
-            // Set session variables
-            $_SESSION['id'] = $user['id'];
-            $_SESSION['name'] = $name;
-            $_SESSION['email'] = $user['email'];
-            $_SESSION['contact'] = $user['contact'];
-            $_SESSION['address'] = $user['address'];
-            $_SESSION['firstname'] = $user['firstname'];
-            $_SESSION['lastname'] = $user['lastname'];
-            $_SESSION['generated_code'] = $user['generated_code'];
-            $_SESSION['gender'] = $user['contact'];
-            $_SESSION['login_type'] = 1;
+    // Verify password using password_verify
+    if (password_verify($password, $user['password'])) {
+        // Password is correct, proceed with login
+        $name = $user['firstname'] . ' ' . $user['lastname'];
 
-            // Generate OTP and store it in the session (using a 6-digit random number)
-            $_SESSION['otp'] = rand(100000, 999999);
+        // Set session variables
+        $_SESSION['id'] = $user['id'];
+        $_SESSION['name'] = $name;
+        $_SESSION['email'] = $user['email'];
+        $_SESSION['contact'] = $user['contact'];
+        $_SESSION['address'] = $user['address'];
+        $_SESSION['firstname'] = $user['firstname'];
+        $_SESSION['lastname'] = $user['lastname'];
+        $_SESSION['generated_code'] = $user['generated_code'];
+        $_SESSION['gender'] = $user['contact'];
+        $_SESSION['login_type'] = 1;
 
-            // Sending SMS Notification Using Twilio
-				 $account_id = "ACf135ab5e39c48fcdbb605db4696c768c";
-                 $auth_token = "313d5b268ae30613b3033b4340a53ff3";
-                 $client = new Client($account_id, $auth_token);
-                 $twilio_number = "+12242315707";
-                 $number = "+63 991 960 9412";
-             
-                 $client->messages->create($number, [
-                 'from' => $twilio_number,
-                 'body' => 'EARL NI DISREGARD LNG LOVE Your OTP is: ' . $_SESSION['otp']
-             ]);
+        // Generate OTP and store it in the session (using a 6-digit random number)
+        $_SESSION['otp'] = rand(100000, 999999);
 
-            // Return success response
-            $resp['status'] = 'success';
-        } else {
-            // Incorrect credentials
-            $resp['status'] = 'incorrect';
-        }
+        // Sending SMS Notification Using Twilio
+        $account_id = "ACf135ab5e39c48fcdbb605db4696c768c";
+        $auth_token = "313d5b268ae30613b3033b4340a53ff3";
+        $client = new Client($account_id, $auth_token);
+        $twilio_number = "+12242315707";
+        $number = "+63 991 960 9412";
+     
+        $client->messages->create($number, [
+            'from' => $twilio_number,
+            'body' => 'Your OTP is: ' . $_SESSION['otp']
+        ]);
 
-        // Check for any SQL errors
-        if ($this->conn->error) {
-            $resp['status'] = 'failed';
-            $resp['_error'] = $this->conn->error;
-        }
+        // Return success response
+        $resp['status'] = 'success';
+    } else {
+        // Incorrect password
+        $resp['status'] = 'incorrect';
+    }
+} else {
+    // User does not exist
+    $resp['status'] = 'incorrect';
+}
 
-        return json_encode($resp);
+// Check for any SQL errors
+if ($this->conn->error) {
+    $resp['status'] = 'failed';
+    $resp['_error'] = $this->conn->error;
+}
+
+return json_encode($resp);
+
     }
 
     // Verify OTP method

@@ -75,17 +75,24 @@ require_once('config.php');
                     </div>
                 </div>
 
-                <!-- Right Column (QR Code Section) -->
+                   <!-- Right Column (QR Code Section) -->
                 <div class="col-md-6 d-flex align-items-center justify-content-center flex-column">
-                    <b> <p class="text-center mb-3">For Easy Login Option, Take a Picture</p></b>
-                    <?php
-                        $generated_code = $_SESSION['generated_code'];
-                        $qr_code_url = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urlencode($generated_code); 
-                    ?>
-                    <img src="<?php echo $qr_code_url; ?>" alt="QR Code" class="img-fluid">
-                </div>
-            </div>
+                        <b><p class="text-center mb-3">For Easy Login Option, Take a Picture</p></b>
+                        <?php
+                            $generated_code = $_SESSION['generated_code'];
+                            $qr_code_url = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urlencode($generated_code); 
+                        ?>
+                        <!-- QR Code Image -->
+                        <img id="qrCodeImage" src="<?php echo $qr_code_url; ?>" alt="QR Code" class="img-fluid">
+                        <p>
+                            
+                        </p>
 
+                        <!-- Download Button -->
+                        <button id="downloadBtn"  class="btn btn-info btn-flat" >Download QR Code</button>
+                    </div>
+            </div>
+         
             <!-- View Documents Button -->
             <div class="card-body">
                 <button type="button" class="btn btn-info btn-flat" data-toggle="modal" data-target="#addDocumentModal">
@@ -111,12 +118,12 @@ require_once('config.php');
                 <!-- Static Documents -->
                 <div class="row">
                 <?php 
-    $qry = $conn->query("SELECT * FROM documents WHERE client_id = '{$_SESSION['id']}' LIMIT 1");
-    $row = $qry->fetch_assoc(); // Fetching only one row
+$qry = $conn->query("SELECT * FROM documents WHERE client_id = '{$_SESSION['id']}' LIMIT 1");
+$row = $qry->fetch_assoc(); // Fetching only one row
 ?>
 <div class="modal-body">
-    <!-- Static Documents -->
     <div class="row">
+        <?php if ($row): ?>
         <!-- Cedule File -->
         <div class="row">
             <div class="col-12">
@@ -138,8 +145,15 @@ require_once('config.php');
             <h5>Description</h5>
             <p><?php echo htmlspecialchars($row['description']); ?></p>
         </div>
+        <?php else: ?>
+        <!-- No Documents Found Message -->
+        <div class="col-12 text-center">
+            <p class="text-danger">No documents found for this client.</p>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
+
 
                 </div>
             </div>
@@ -306,6 +320,24 @@ require_once('config.php');
     </div>
 </section>
 <script>
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+        // Get the QR code image URL
+        var qrCodeUrl = document.getElementById('qrCodeImage').src;
+        
+        // Create a temporary anchor element to trigger the download
+        var link = document.createElement('a');
+        link.href = qrCodeUrl;
+        link.download = 'qr_code.png'; // Specify the filename for download
+
+        // Append the link to the document body (required for browsers like Firefox)
+        document.body.appendChild(link);
+        
+        // Programmatically click the link to trigger the download
+        link.click();
+        
+        // Remove the link from the DOM after download
+        document.body.removeChild(link);
+    });
     $(document).ready(function() {
     // Handle the form submission
     $('#addDocumentForm').submit(function(e) {
@@ -344,3 +376,4 @@ require_once('config.php');
     });
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>

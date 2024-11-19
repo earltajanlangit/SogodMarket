@@ -372,87 +372,68 @@ Class Master extends DBConnection {
 		return json_encode($resp);
 	}
 	
-	
-	
-	
 	function save_booking() {
 		extract($_POST);
 		$data = "";
-		
-		// Set client_id if not set
 		if (!isset($client_id)) {
 			$_POST['client_id'] = $_SESSION['id'];
 		}
-	
-		// Loop through POST data and build the data string for insertion or update
 		foreach ($_POST as $k => $v) {
 			if (!in_array($k, array('id', 'description'))) {
 				if (!empty($data)) $data .= ",";
 				$data .= " `{$k}`='{$v}' ";
 			}
 		}
-	
-		// If the ID is empty, perform INSERT; otherwise, perform UPDATE
 		if (empty($id)) {
-			// INSERT
 			$sql = "INSERT INTO `rent_list` set {$data} ";
 			$save = $this->conn->query($sql);
 		} else {
-			// UPDATE
 			$sql = "UPDATE `rent_list` set {$data} where id = '{$id}' ";
 			$save = $this->conn->query($sql);
 		}
-	
-		// Check if the save operation was successful
 		if ($save) {
 			$resp['status'] = 'success';
-			
 			if (!empty($id)) {
 				$this->settings->set_flashdata('success', "Rental Booking successfully updated.");
-			}
-	
-			// Decrement the quantity of the space if the status is Confirmed (1)
-			if (isset($status) && $status == 1) {
-				$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` - 1 WHERE `id` = '{$space_id}'";
-				$update = $this->conn->query($update_sql);
-	
-				if (!$update) {
-					$resp['status'] = 'failed';
-					$resp['err'] = $this->conn->error . "[{$update_sql}]";
-					return json_encode($resp);
+			} 
+				// Decrement the quantity of the bike if the status is Confirmed (1)
+				if (isset($status) && $status == 1) {
+					$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` - 1 WHERE `id` = '{$space_id}'";
+					$update = $this->conn->query($update_sql);
+                	$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Confirmed";
+         
+					if (!$update) {
+						$resp['status'] = 'failed';
+						$resp['err'] = $this->conn->error . "[{$update_sql}]";
+						return json_encode($resp);
+					}
+				} elseif ($status == 0){
+					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Pending";
+				}elseif ($status == 2){
+					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Cancelled";
+				}elseif ($status == 3){
+					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Done";
 				}
-	
-				// Message for SMS
-				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Confirmed";
-			} elseif ($status == 0) {
-				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Pending";
-			} elseif ($status == 2) {
-				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Cancelled";
-			} elseif ($status == 3) {
-				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Done";
-			}
-	
-			// Send SMS Notification Using Twilio
-			$account_id = "ACf135ab5e39c48fcdbb605db4696c768c";
-			$auth_token = "b7b2584d341e89e744ea14b5f1ddec8e";
-			$client = new Client($account_id, $auth_token);
-			$twilio_number = "+12242315707";
-			$number = "+63 991 960 9412";  // Replace with actual recipient number
-	
-			$client->messages->create($number, [
-				'from' => $twilio_number,
-				'body' => $message
-			]);
-			// End of SMS Notification Using Twilio
+				// Sending SMS Notification Using Twilio
+				    $account_id = "AC4fafee2b5eecc224a18fe740a9123df2";
+               		$auth_token = "e287cd99a0befe9a246bdf57759c8cc7";
+                	$client = new Client($account_id, $auth_token);
+                	$twilio_number = "+12093754713";
+                	$number = "+63 936 064 8398";
+                
+                	$client->messages->create($number, [
+                    'from' => $twilio_number,
+                    'body' => $message 	
+                ]);
+				// end of SMS Notification Using Twilio
+			
 		} else {
-			// If save fails, return error response
 			$resp['status'] = 'failed';
 			$resp['err'] = $this->conn->error . "[{$sql}]";
 		}
-	
 		return json_encode($resp);
 	}
-	
+
 	function delete_booking(){
 		extract($_POST);
 		$del = $this->conn->query("DELETE FROM `rent_list` where id = '{$id}'");
@@ -685,11 +666,6 @@ Class Master extends DBConnection {
 		extract($_POST);  // Extract POST data
 		$data = "";  // Initialize the data string
 	
-		// Set client_id if not set
-		if (!isset($client_id)) {
-			$_POST['client_id'] = $_SESSION['id'];  // Assuming client_id comes from session
-		}
-	
 		// Loop through POST data and build the data string for insertion or update
 		foreach ($_POST as $k => $v) {
 			if (!in_array($k, array('id', 'description'))) {  // Exclude unnecessary fields
@@ -698,12 +674,10 @@ Class Master extends DBConnection {
 			}
 		}
 	
-		
-			// INSERT operation
-			$sql = "INSERT INTO `payments` set {$data} ";
-			$save = $this->conn->query($sql);
+		// INSERT operation
+		$sql = "INSERT INTO `payments` set {$data} ";
+		$save = $this->conn->query($sql);
 	
-			
 		// Check if the save operation was successful
 		if ($save) {
 			$resp['status'] = 'success';
@@ -714,7 +688,7 @@ Class Master extends DBConnection {
 	
 			// Update payment status and rent_list if payment is confirmed
 			if (isset($status) && $status == 1) {
-				// Assuming you want to update rent_list with payment details
+				// Update rent_list with payment details
 				$update_sql = "UPDATE `rent_list` SET `payment_status` = 'Paid' WHERE `id` = '{$booking_id}'";
 				$update = $this->conn->query($update_sql);
 	
@@ -724,20 +698,19 @@ Class Master extends DBConnection {
 					return json_encode($resp);
 				}
 	
-				// Payment confirmation message
 				$message = "Your payment has been successfully processed for booking #{$booking_id}.";
 			} else {
-				// If the payment is not confirmed, set a generic status message
 				$message = "Your payment status has been updated.";
 			}
 		} else {
-			// If save fails, return error response
 			$resp['status'] = 'failed';
 			$resp['err'] = $this->conn->error . "[{$sql}]";
 		}
 	
 		return json_encode($resp);
 	}
+	
+	
 	
 	}
 
