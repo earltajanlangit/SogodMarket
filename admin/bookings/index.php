@@ -46,7 +46,7 @@
 					<?php 
 					$i = 1;
 					$qry = $conn->query("SELECT r.*, CONCAT(c.firstname, ' ', c.lastname) as client, 
-											s.space_name, cat.category, r.meeting_schedule, c.address, c.id as client_id 
+											s.space_name, cat.category, r.meeting_schedule,r.id as booking_id, c.address, c.id as client_id 
 											FROM `rent_list` r 
 											INNER JOIN clients c ON c.id = r.client_id 
 											INNER JOIN space_list s ON s.id = r.space_id 
@@ -92,7 +92,7 @@
 									<div class="dropdown-divider"></div>
 									<a class="dropdown-item view_documents" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-file-alt text-dark"></span> View Documents</a> <!-- New View Documents action -->
 									<div class="dropdown-divider"></div>
-									<a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
+									<a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['booking_id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
 								</div>
 
 							</td>
@@ -163,10 +163,13 @@
 		$('.view_documents').click(function(){
 			var bookingId = $(this).attr('data-id');
 			$('#viewDocumentsModal-' + bookingId).modal('show'); // Show the View Documents Modal
-		});
-		$('.delete_data').click(function(){
-			_conf("Are you sure to delete this booking permanently?","delete_booking",[$(this).attr('data-id')])
 		})
+		$('.delete_data').click(function(){
+			var bookingId = $(this).attr('data-id');
+			console.log('Deleting booking ID:', bookingId); // Debugging line
+			_conf("Are you sure to delete this booking permanently?", "delete_booking", [bookingId]);
+		});
+
 		$('.view_data').click(function(){
 			uni_modal('Booking Details','bookings/view_booking.php?id='+$(this).attr('data-id'),'mid-large')
 		})
@@ -175,20 +178,26 @@
 		})
 	})
 
-	function delete_booking(id){
-		start_load()
-		$.ajax({
-			url:_base_url_+'classes/Master.php?f=delete_booking',
-			method:"POST",
-			data:{id:id},
-			success:function(resp){
-				if(resp == 1){
-					alert_toast("Booking successfully deleted.",'success')
-					setTimeout(function(){
-						location.reload()
-					},1500)
-				}
-			}
-		})
-	}
+	function delete_booking($id) {
+    start_loader();
+    $.ajax({
+        url: _base_url_ + "classes/Master.php?f=delete_booking",
+        method: "POST",
+        data: { id: $id }, // Make sure this matches the key expected by PHP
+        dataType: "json",
+        error: err => {
+            console.log(err);
+            alert_toast("An error occurred.", 'error');
+            end_loader();
+        },
+        success: function(resp) {
+            if (typeof resp == 'object' && resp.status == 'success') {
+                location.reload();
+            } else {
+                alert_toast("An error occurred.", 'error');
+                end_loader();
+            }
+        }
+    });
+}
 </script>

@@ -1,129 +1,110 @@
-<?php if($_settings->chk_flashdata('success')): ?>
-<script>
-	alert_toast("<?php echo $_settings->flashdata('success') ?>",'success')
-</script>
-<?php endif;?>
+<?php if ($_settings->chk_flashdata('success')) : ?>
+    <script>
+        alert_toast("<?php echo $_settings->flashdata('success') ?>", 'success')
+    </script>
+<?php endif; ?>
+
 <div class="card card-outline card-primary">
-	<div class="card-header">
-		<h3 class="card-title">List of Clients</h3>
-		
-	</div>
-	<div class="card-body">
-		<div class="container-fluid">
-			<div class="container-fluid">
-				<table class="table table-bordered table-striped">
-					<colgroup>
-						<col width="5%">
-						<col width="15%">
-						<col width="25%">
-						<col width="15%">
-						<col width="10%">
-						<col width="20%">
-						<col width="20%">
-						<col width="20%">
-						<col width="20%">
-						<col width="15%">
-					</colgroup>
-					<thead>
-						<tr class="bg-navy disabled">
-							<th>#</th>
-							<th>Client ID</th>
-							<th>Name</th>
-							<th>Contact Number</th>
-							<th>Gender</th>
-							<th>Address</th>
-							<th>Email</th>
-							<th>Password</th>
-							<th>QR Code</th>
-							<th>Action</th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php 
-						$i = 1;
-						$qry = $conn->query("
-							SELECT c.*, r.status, DATEDIFF(r.date_end, CURDATE()) as remaining_days 
-							FROM `clients` c
-							JOIN `rent_list` r ON c.id = r.client_id
-							WHERE r.status = 1 AND DATEDIFF(r.date_end, CURDATE()) > 0
-							ORDER BY c.id ASC
-						");
-						while($row = $qry->fetch_assoc()):
-							foreach($row as $k=> $v){
-								$row[$k] = trim(stripslashes($v));
-							}
-						?>
-							<tr>
-								<td class="text-center"><?php echo $i++; ?></td>
-								<td><?php echo $row['id'] ?></td>
-								<td><?php echo $row['firstname'] . ' ' . $row['lastname']; ?></td>
-								<td><?php echo $row['contact'] ?></td>
-								<td><?php echo $row['gender'] ?></td>
-								<td><?php echo $row['address'] ?></td>
-								<td><?php echo $row['email'] ?></td>
-								<td><?php echo $row['password'] ?></td>
-								<td><?php echo $row['generated_code'] ?></td>
-								<td align="center">
-									<button type="button" class="btn btn-flat btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
-										Action
-										<span class="sr-only">Toggle Dropdown</span>
-									</button>
-									<div class="dropdown-menu" role="menu">
-										<a class="dropdown-item edit_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-edit text-primary"></span> Edit</a>
-										<div class="dropdown-divider"></div>
-										<a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
-									</div>
-								</td>
-							</tr>
-						<?php endwhile; ?>
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+    <div class="card-header">
+        <h3 class="card-title">List of Clients</h3>
+    </div>
+    <div class="card-body">
+        <div class="container-fluid">
+            <div class="row">
+                <?php 
+                $qry = $conn->query("
+                SELECT 
+                    c.*, 
+                    r.id as rent_id, 
+                    r.space_id, 
+                    r.status, 
+                    DATEDIFF(r.date_end, CURDATE()) as remaining_days,
+                    s.space_name,
+                    s.description
+                FROM `clients` c
+                JOIN `rent_list` r ON c.id = r.client_id
+                JOIN `space_list` s ON r.space_id = s.id
+                WHERE r.status = 1 AND DATEDIFF(r.date_end, CURDATE()) > 0
+                ORDER BY c.id ASC
+            ");
+                while ($row = $qry->fetch_assoc()) :
+                    foreach ($row as $k => $v) {
+                        $row[$k] = trim(stripslashes($v));
+                    }
+                ?>
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <div class="text-center mb-3">
+                                    <img class="rounded-circle w-25" 
+                                        src="<?php echo validate_image('uploads/blank-profile.png'); ?>" 
+                                        alt="Profile Image" 
+                                        onerror="this.onerror=null;this.src='uploads/blank-profile.png';">
+                                </div>
+                                <h5 class="text-center font-weight-bold">
+                                    <?php echo $row['firstname'] . ' ' . $row['lastname']; ?>
+                                </h5>
+                                <p class="text-muted text-center mb-3">
+                                    <strong>Contact:</strong> <?php echo $row['contact']; ?><br>
+                                    <strong>Address:</strong> <?php echo $row['address']; ?>
+                                </p>
+                                <div class="text-center mb-3">
+                                    <h6><?php echo $row['space_name']; ?></h6>
+                                    <p class="text-muted"><?php echo $row['description']; ?></p>
+                                    <img class="card-img-top w-50" src="<?php echo validate_image("uploads/thumbnails/" . $row['space_id'] . ".png") ?>" alt="Space Image" />
+                                </div>
+                                <div class="text-center mb-3">
+                                    <?php if ($row['status'] == 1): ?>
+                                        <p class="text-success font-weight-bold">
+                                            <i class="fa fa-check-circle"></i> Contract is Active - <?php echo $row['remaining_days']; ?> days remaining
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-danger btn-sm delete_data" data-id="<?php echo $row['rent_id']; ?>">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm edit_data" data-id="<?php echo $row['rent_id']; ?>">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-	$(document).ready(function(){
-		$('#create_new').click(function(){
-			uni_modal("<i class='fa fa-plus'></i> Add New Client", 'client/manage_client.php')
-		})
-		$('.edit_data').click(function(){
-			uni_modal("<i class='fa fa-edit'></i> Edit Client's Details", 'client/manage_client.php?id='+$(this).attr('data-id'))
-		})
-		$('.delete_data').click(function(){
-			_conf("Are you sure to delete this Client permanently?","delete_client",[$(this).attr('data-id')])
-		})
-		$('.table td,.table th').addClass('px-2 py-1')
-		$('.table').dataTable({
-			columnDefs: [
-				{ targets: [4, 5], orderable: false }
-			],
-			initComplete:function(settings, json){
-				$('.table td,.table th').addClass('px-2 py-1')
-			}
-		});
-	})
-	function delete_client($id){
-		start_loader();
-		$.ajax({
-			url:_base_url_+"classes/Clients.php?f=delete",
-			method:"POST",
-			data:{id: $id},
-			dataType:"json",
-			error:err=>{
-				console.log(err)
-				alert_toast("An error occured.",'error');
-				end_loader();
-			},
-			success:function(resp){
-				if(typeof resp == 'object' && resp.status == 'success'){
-					location.reload();
-				}else{
-					alert_toast("An error occured.",'error');
-					end_loader();
-				}
-			}
-		})
-	}
+    $(document).ready(function () {
+        $('.delete_data').click(function () {
+            _conf("Are you sure you want to delete this record permanently?", "delete_rent", [$(this).attr('data-id')]);
+        });
+
+        function delete_rent(id) {
+            start_loader();
+            $.ajax({
+                url: _base_url_ + "classes/Master.php?f=delete_vendor",
+                method: "POST",
+                data: { id: id },
+                dataType: "json",
+                error: err => {
+                    console.log(err);
+                    alert_toast("An error occurred.", 'error');
+                    end_loader();
+                },
+                success: function (resp) {
+                    if (resp && resp.status === 'success') {
+                        alert_toast("Record deleted successfully.", 'success');
+                        location.reload();
+                    } else {
+                        alert_toast("An error occurred.", 'error');
+                        end_loader();
+                    }
+                }
+            });
+        }
+    });
 </script>

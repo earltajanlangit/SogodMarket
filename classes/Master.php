@@ -296,6 +296,20 @@ Class Master extends DBConnection {
 		return json_encode($resp);
 
 	}
+	public function delete_vendor(){
+		extract($_POST);
+		$del = $this->conn->query("DELETE FROM `rent_list` WHERE id = '{$id}'");
+		if($del){
+			$resp['status'] = 'success';
+			$this->settings->set_flashdata('success', "Record successfully deleted.");
+		} else {
+			$resp['status'] = 'failed';
+			$resp['error'] = $this->conn->error;
+		}
+		return json_encode($resp);
+	}
+	
+	
 	function delete_img(){
 		extract($_POST);
 		if(is_file($path)){
@@ -435,18 +449,28 @@ Class Master extends DBConnection {
 	}
 
 	function delete_booking(){
-		extract($_POST);
-		$del = $this->conn->query("DELETE FROM `rent_list` where id = '{$id}'");
+		// Log the incoming data for debugging
+		file_put_contents('log.txt', print_r($_POST, true), FILE_APPEND);
+	
+		if (!isset($_POST['id'])) {
+			return json_encode(['status' => 'failed', 'error' => 'Missing id parameter']);
+		}
+	
+		$id = $_POST['id'];
+		$del = $this->conn->query("DELETE FROM `rent_list` WHERE id = '{$id}'");
+	
 		if($del){
 			$resp['status'] = 'success';
-			$this->settings->set_flashdata('success',"Rental Booking successfully deleted.");
-		}else{
+			$this->settings->set_flashdata('success', "Rental Booking successfully deleted.");
+		} else {
 			$resp['status'] = 'failed';
 			$resp['error'] = $this->conn->error;
 		}
 		return json_encode($resp);
-
 	}
+	
+	
+	
 	public function verify_code($contact, $entered_code) {
 		// Check if the verification code for the contact exists and matches
 		if (isset($_SESSION['verification_code'][$contact]) && $_SESSION['verification_code'][$contact] === $entered_code) {
@@ -774,6 +798,9 @@ switch ($action) {
 	break;
 	case 'save_payment':
 		echo $Master->save_payment();
+	break;
+	case 'delete_vendor':
+		echo $Master->delete_vendor();
 	break;
 	default:
 		// echo $sysset->index();

@@ -97,7 +97,7 @@
 function delete_users($id){
     start_loader();
     $.ajax({
-        url: _base_url_ + "classes/Clients.php?f=delete_users",
+        url: _base_url_ + "classes/Master.php?f=delete_client",
         method: "POST",
         data: { id: $id },
         dataType: "json",
