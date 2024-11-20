@@ -1,92 +1,101 @@
-<?php
-require_once($_SERVER['DOCUMENT_ROOT'].'/SogodMarket/config.php');
-if(isset($_GET['id']) && $_GET['id'] > 0){
-    $qry = $conn->query("SELECT * FROM `clients` WHERE id = '{$_GET['id']}'");
-    if($qry->num_rows > 0){
-        foreach($qry->fetch_assoc() as $k => $v){
-            $$k = $v;
-        }
+<?php 
+    $user = $conn->query("SELECT * from `clients` where id = '{$_GET['id']}' ");
+    $meta = [];
+    foreach($user->fetch_array() as $k => $v){
+        $meta[$k] = $v;
     }
-}
 ?>
+<?php if($_settings->chk_flashdata('success')): ?>
+<script>
+    alert_toast("<?php echo $_settings->flashdata('success') ?>", 'success')
+</script>    
+<?php endif; ?>
 <div class="card card-outline card-primary">
     <div class="card-body">
         <div class="container-fluid">
             <div id="msg"></div>
-            <form action="" id="manage-client">    
+            <form action="" id="manage-user">    
+                
                 <div class="form-group">
                     <label for="firstname">First Name</label>
-                    <input type="text" name="firstname" id="firstname" class="form-control" value="<?php echo isset($firstname) ? htmlspecialchars($firstname) : '' ?>" required>
+                    <input type="text" name="firstname" id="name" class="form-control" value="<?php echo isset($meta['firstname']) ? $meta['firstname'] : '' ?>" required>
                 </div>
                 <div class="form-group">
                     <label for="lastname">Last Name</label>
-                    <input type="text" name="lastname" id="lastname" class="form-control" value="<?php echo isset($lastname) ? htmlspecialchars($lastname) : '' ?>" required>
+                    <input type="text" name="lastname" id="lastname" class="form-control" value="<?php echo isset($meta['lastname']) ? $meta['lastname'] : '' ?>" required>
                 </div>
                 <div class="form-group">
                     <label for="contact">Contact Number</label>
-                    <input type="text" name="contact" id="contact" class="form-control" value="<?php echo isset($contact) ? htmlspecialchars($contact) : '' ?>" required>
+                    <input type="text" name="contact" id="contact" class="form-control" value="<?php echo isset($meta['contact']) ? $meta['contact'] : '' ?>" required>
                 </div>
                 <div class="form-group">
                     <label for="gender">Gender</label>
-                    <select name="gender" id="gender" class="custom-select select" required>
-                        <option <?php echo isset($gender) && $gender == "Male" ? "selected" : '' ?>>Male</option>
-                        <option <?php echo isset($gender) && $gender == "Female" ? "selected" : '' ?>>Female</option>
+                    <select name="gender" id="" class="custom-select select" required>
+                                    <option <?php echo $_settings->userdata('gender') == "Male" ? "selected" : '' ?>>Male</option>
+                                    <option <?php echo $_settings->userdata('gender') == "Female" ? "selected" : '' ?>>Female</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="address">Address</label>
-                    <input type="text" name="address" id="address" class="form-control" value="<?php echo isset($address) ? htmlspecialchars($address) : '' ?>" required>
+                    <input type="text" name="address" id="address" class="form-control" value="<?php echo isset($meta['address']) ? $meta['address'] : '' ?>" required>
                 </div>
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" name="email" id="email" class="form-control" value="<?php echo isset($email) ? htmlspecialchars($email) : '' ?>" required autocomplete="off">
+                    <input type="text" name="email" id="email" class="form-control" value="<?php echo isset($meta['email']) ? $meta['email'] : '' ?>" required autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" name="password" id="password" class="form-control" placeholder="Enter new password" autocomplete="off">
                 </div>
-                <input type="hidden" name="id" value="<?php echo isset($id) ? htmlspecialchars($id) : '' ?>">
+                <input type="hidden" name="id" value="<?php echo isset($meta['id']) ? $meta['id'] : '' ?>">
             </form>
         </div>
     </div>
-
-    <script>
-        $(document).ready(function(){
-            $('#manage-client').submit(function(e){
-                e.preventDefault();
-                var _this = $(this);
-                $('.err-msg').remove();
-                start_loader();
-                $.ajax({
-                    url: _base_url_ + "classes/Clients.php?f=save",
-                    data: new FormData($(this)[0]),
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                    method: 'POST',
-                    dataType: 'json',
-                    error: function(err){
-                        console.log(err);
-                        alert_toast("An error occurred", 'error');
-                        end_loader();
-                    },
-                    success: function(resp){
-                        if(typeof resp == 'object' && resp.status == 'success'){
-                            location.reload();
-                        } else if(resp.status == 'failed' && !!resp.msg){
-                            var el = $('<div>').addClass("alert alert-danger err-msg").text(resp.msg);
-                            _this.prepend(el);
-                            el.show('slow');
-                            $("html, body").animate({ scrollTop: _this.closest('.card').offset().top }, "fast");
-                            end_loader();
-                        } else {
-                            alert_toast("An error occurred", 'error');
-                            end_loader();
-                            console.log(resp);
-                        }
-                    }
-                });
-            });
-        });
-    </script>
+    <div class="card-footer">
+        <div class="col-md-12">
+            <div class="row">
+                <button class="btn btn-sm btn-primary" form="manage-user">Update</button>
+            </div>
+        </div>
+    </div>
 </div>
+<style>
+    img#cimg {
+        height: 15vh;
+        width: 15vh;
+        object-fit: cover;
+        border-radius: 100%;
+    }
+</style>
+<script>
+    function displayImg(input, _this) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#cimg').attr('src', e.target.result);
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    $('#manage-user').submit(function(e) {
+        e.preventDefault();
+        start_loader();
+        $.ajax({
+            url: _base_url_ + 'classes/Clients.php?f=save',
+            data: new FormData($(this)[0]),
+            cache: false,
+            contentType: false,
+            processData: false,
+            method: 'POST',
+            type: 'POST',
+            success: function(resp) {
+                if (resp == 1) {
+                    location.reload();
+                } else {
+                    $('#msg').html('<div class="alert alert-danger">' + resp + '</div>');
+                    end_loader();
+                }
+            }
+        });
+    });
+</script>

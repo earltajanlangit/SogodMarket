@@ -4,15 +4,15 @@ require 'vendor/autoload.php';
 use Twilio\Rest\Client;
 
 // Twilio credentials
-$sid = 'AC4fafee2b5eecc224a18fe740a9123df2'; 
-$token = '73d5227bdef1c0eaead01bcf66f9c7f5'; 
-$twilio_number = '+12093754713'; 
+$sid = 'ACf135ab5e39c48fcdbb605db4696c768c'; 
+$token = '9dcad237fbc5afa4dc00e3e2011f8ec7'; 
+$twilio_number = '+12242315707'; 
 
 $client = new Client($sid, $token);
 session_start(); 
 if (isset($_POST['contact'])) {
     $contact = $_POST['contact'];
-    $contact1 = "+63 936 064 8398";
+    $contact1 = "+63 991 960 9412";
     $generated_code = $_POST['generated_code'];
     
     try {

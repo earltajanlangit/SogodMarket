@@ -477,7 +477,6 @@ Class Master extends DBConnection {
 	
 	public function register() {
 		// Start session
-	
 		
 		extract($_POST);
 	
@@ -488,55 +487,69 @@ Class Master extends DBConnection {
 			return json_encode($resp);
 		}
 	
-		// Continue with existing registration logic
-		$data = "";
-		$_POST['password'] = md5($_POST['password']);
-		foreach($_POST as $k => $v) {
-			if (!in_array($k, array('id', 'verification_code'))) {
-				if (!empty($data)) $data .= ",";
-				$data .= " `{$k}`='{$v}' ";
-			}
+		// Sanitize and prepare input data
+		$firstname = htmlspecialchars(trim($_POST['firstname'] ?? ''));
+		$lastname = htmlspecialchars(trim($_POST['lastname'] ?? ''));
+		$address = htmlspecialchars(trim($_POST['address'] ?? ''));
+		$gender = htmlspecialchars(trim($_POST['gender'] ?? ''));
+		$contact = htmlspecialchars(trim($_POST['contact'] ?? ''));
+		$email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
+		$password = trim($_POST['password'] ?? '');
+	
+		// Prepare SQL fields and parameters
+		$data = "firstname = ?, lastname = ?, gender = ?, address = ?, contact = ?, email = ?";
+		$params = [$firstname, $lastname, $gender, $address, $contact, $email];
+	
+		// Handle password if provided
+		if (!empty($password)) {
+			$data .= ", password = ?";
+			$params[] = password_hash($password, PASSWORD_DEFAULT); // Use password_hash for secure hashing
 		}
 	
-		// Check if email already exists
-		$check = $this->conn->query("SELECT * FROM `clients` WHERE `email` = '{$email}' ".(!empty($id) ? " AND id != {$id} " : "")." ")->num_rows;
-		if ($this->capture_err()) {
-			return $this->capture_err();
-		}
-		if ($check > 0) {
-			$resp['status'] = 'failed';
-			$resp['msg'] = "Email already taken.";
-			return json_encode($resp);
-		}
-	
-		// Insert or update record
 		if (empty($id)) {
-			$sql = "INSERT INTO `clients` SET {$data}"; 	 	 		
-			$save = $this->conn->query($sql);
-			$id = $this->conn->insert_id;
+			// Check if email already exists
+			$emailCheckStmt = $this->conn->prepare("SELECT id FROM clients WHERE email = ?");
+			$emailCheckStmt->bind_param("s", $email);
+			$emailCheckStmt->execute();
+			$emailCheckStmt->store_result();
+	
+			if ($emailCheckStmt->num_rows > 0) {
+				$resp['status'] = 'failed';
+				$resp['msg'] = "Email already taken.";
+				return json_encode($resp);
+			}
+	
+			// Insert new record
+			$sql = "INSERT INTO clients SET $data";
 		} else {
-			$sql = "UPDATE `clients` SET {$data} WHERE id = '{$id}'";
-			$save = $this->conn->query($sql);
+			// Update existing record
+			$sql = "UPDATE clients SET $data WHERE id = ?";
+			$params[] = $id; // Add ID to parameters for update
 		}
 	
-		if ($save) {
+		// Prepare and execute SQL query
+		$stmt = $this->conn->prepare($sql);
+		$stmt->bind_param(str_repeat("s", count($params)), ...$params);
+	
+		if ($stmt->execute()) {
 			$resp['status'] = 'success';
 			if (empty($id)) {
 				$this->settings->set_flashdata('success', "Account successfully created.");
 			} else {
 				$this->settings->set_flashdata('success', "Account successfully updated.");
 			}
-			foreach($_POST as $k => $v) {
-				$this->settings->set_userdata($k, $v);
-			}
-			$this->settings->set_userdata('id', $id);
+	
+			// Set session data
+			$this->settings->set_userdata('email', $email);
+			$this->settings->set_userdata('id', empty($id) ? $this->conn->insert_id : $id);
 		} else {
 			$resp['status'] = 'failed';
-			$resp['err'] = $this->conn->error . "[{$sql}]";
+			$resp['err'] = "Error: " . $stmt->error;
 		}
 	
-		return json_encode($resp);	
+		return json_encode($resp);
 	}
+	
 	
 	
 	function rent_avail(){

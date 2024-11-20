@@ -107,51 +107,56 @@ $(function() {
     });
 
     $('#registration').submit(function(e) {
-        e.preventDefault();
-        start_loader();
-        if ($('.err-msg').length > 0) $('.err-msg').remove();
+    e.preventDefault();
+    start_loader();
+    if ($('.err-msg').length > 0) $('.err-msg').remove();
 
-        // Check the verification code
-        const enteredCode = $('[name="verification_code"]').val();
-        const correctCode = $('#generated_code').val();
+    // Check the verification code
+    const enteredCode = $('[name="verification_code"]').val();
+    const correctCode = $('#generated_code').val();
 
-        if (enteredCode !== correctCode) {
-            var _err_el = $('<div>');
-            _err_el.addClass("alert alert-danger err-msg").text("The verification code is incorrect.");
-            $('[name="verification_code"]').after(_err_el);
+    if (enteredCode !== correctCode) {
+        var _err_el = $('<div>');
+        _err_el.addClass("alert alert-danger err-msg").text("The verification code is incorrect.");
+        $('[name="verification_code"]').after(_err_el);
+        end_loader();
+        return;
+    }
+
+    // Remove the confirm_password field from the form data
+    const formData = $('#registration').serializeArray().filter(field => field.name !== 'confirm_password');
+
+    // Send the data to the server
+    $.ajax({
+        url: _base_url_ + "classes/Master.php?f=register",
+        method: "POST",
+        data: formData, // Use the filtered data
+        dataType: "json",
+        error: err => {
+            console.log(err);
+            alert_toast("An error occurred", 'error');
             end_loader();
-            return;
-        }
-
-        $.ajax({
-            url: _base_url_ + "classes/Master.php?f=register",
-            method: "POST",
-            data: $(this).serialize(),
-            dataType: "json",
-            error: err => {
-                console.log(err);
+        },
+        success: function(resp) {
+            if (typeof resp === 'object' && resp.status === 'success') {
+                alert_toast("Account successfully registered", 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 2000);
+            } else if (resp.status === 'failed' && !!resp.msg) {
+                var _err_el = $('<div>');
+                _err_el.addClass("alert alert-danger err-msg").text(resp.msg);
+                $('[name="password"]').after(_err_el);
+                end_loader();
+            } else {
+                console.log(resp);
                 alert_toast("An error occurred", 'error');
                 end_loader();
-            },
-            success: function(resp) {
-                if (typeof resp === 'object' && resp.status === 'success') {
-                    alert_toast("Account successfully registered", 'success');
-                    setTimeout(function() {
-                        location.reload();
-                    }, 2000);
-                } else if (resp.status === 'failed' && !!resp.msg) {
-                    var _err_el = $('<div>');
-                    _err_el.addClass("alert alert-danger err-msg").text(resp.msg);
-                    $('[name="password"]').after(_err_el);
-                    end_loader();
-                } else {
-                    console.log(resp);
-                    alert_toast("An error occurred", 'error');
-                    end_loader();
-                }
             }
-        });
+        }
     });
+});
+
 
     // Password confirmation check
     $('#password, #confirm_password').on('input', function() {
