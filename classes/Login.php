@@ -126,6 +126,11 @@ return json_encode($resp);
             }
         return json_encode($resp);
     }
+    public function logout(){
+		if($this->settings->sess_des()){
+			redirect('admin/login.php');
+		}
+	}
     
 }    
 
