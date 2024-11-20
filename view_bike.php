@@ -75,7 +75,7 @@ if($bikes->num_rows > 0){
         ?>
             <a class="col mb-5 text-decoration-none text-dark" href=".?p=view_bike&id=<?php echo md5($row['id']) ?>">
                 <div class="card h-100 bike-item">
-                    <img class="card-img-top w-100" src="<?php echo validate_image("uploads/thumbnails/".$id.".png") ?>" alt="..." />
+                    <img class="card-img-top w-100" src="<?php echo validate_image("uploads/thumbnails/".$row['id'].".png") ?>" alt="..." />
                     <div class="card-body p-4">
                         <div class="">
                             <h5 class="fw-bolder"><?php echo $row['space_name'] ?></h5>
