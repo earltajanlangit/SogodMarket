@@ -1,6 +1,6 @@
 <style>
-    #uni_modal .modal-content>.modal-footer,#uni_modal .modal-content>.modal-header{
-        display:none;
+    #uni_modal .modal-content>.modal-footer, #uni_modal .modal-content>.modal-header {
+        display: none;
     }
 </style>
 <div class="container-fluid">
@@ -53,11 +53,15 @@
                 </div>
                 <div class="form-group">
                     <label for="" class="control-label">Password</label>
-                    <input type="password" class="form-control form-control-sm form" name="password" required>
+                    <input type="password" class="form-control form-control-sm form" name="password" id="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="" class="control-label">Confirm Password</label>
+                    <input type="password" class="form-control form-control-sm form" name="confirm_password" id="confirm_password" required>
                 </div>
                 <div class="form-group d-flex justify-content-between">
                     <a href="javascript:void()" id="login-show">Already have an Account</a>
-                    <button class="btn btn-primary btn-flat">Register</button>
+                    <button class="btn btn-primary btn-flat" id="register-btn" disabled>Register</button>
                 </div>
                 <div class="form-group">
                     <input type="hidden" id="generated_code" name="generated_code" value="">
@@ -68,14 +72,14 @@
 </div>
 
 <script>
- $(function() {
+$(function() {
     function generateRandomCode() {
         return Math.floor(100000 + Math.random() * 900000); // Generates a 6-digit number
     }
     const generatedCode = generateRandomCode();
-    $('#login-show').click(function() {  // Removed hyphen from the selector
-    uni_modal("", "login.php", "mid-large");
-        });
+    $('#login-show').click(function() {
+        uni_modal("", "login.php", "mid-large");
+    });
     $('#generated_code').val(generatedCode);
 
     $('#send_code').click(function() {
@@ -105,8 +109,7 @@
     $('#registration').submit(function(e) {
         e.preventDefault();
         start_loader();
-        if ($('.err-msg').length > 0)
-            $('.err-msg').remove();
+        if ($('.err-msg').length > 0) $('.err-msg').remove();
 
         // Check the verification code
         const enteredCode = $('[name="verification_code"]').val();
@@ -127,7 +130,7 @@
             dataType: "json",
             error: err => {
                 console.log(err);
-                alert_toast("an error occurred", 'error');
+                alert_toast("An error occurred", 'error');
                 end_loader();
             },
             success: function(resp) {
@@ -143,12 +146,28 @@
                     end_loader();
                 } else {
                     console.log(resp);
-                    alert_toast("an error occurred", 'error');
+                    alert_toast("An error occurred", 'error');
                     end_loader();
                 }
             }
         });
     });
-});
 
+    // Password confirmation check
+    $('#password, #confirm_password').on('input', function() {
+        const password = $('#password').val();
+        const confirmPassword = $('#confirm_password').val();
+
+        if (password !== confirmPassword) {
+            $('#register-btn').attr('disabled', true);
+            if (!$('.password-error').length) {
+                const error = $('<div class="text-danger password-error">Passwords do not match.</div>');
+                $('#confirm_password').after(error);
+            }
+        } else {
+            $('#register-btn').attr('disabled', false);
+            $('.password-error').remove();
+        }
+    });
+});
 </script>

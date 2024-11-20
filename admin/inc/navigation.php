@@ -65,6 +65,12 @@
                   <p>Vendors List</p>
                 </a>
               </li>
+              <li class="nav-item dropdown">
+                <a href="<?php echo base_url ?>admin/?page=users" class="nav-link nav-maintenance/users">
+                  <i class="nav-icon fas fa-users"></i>
+                  <p>Users List</p>
+                </a>
+              </li>
               
               <li class="nav-item dropdown">
                 <a href="<?php echo base_url ?>admin/?page=report" class="nav-link nav-report">
