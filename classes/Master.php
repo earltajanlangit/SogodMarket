@@ -334,10 +334,7 @@ Class Master extends DBConnection {
 			$_POST['client_id'] = $_SESSION['id'];
 		}
 	
-		// Schedule meeting for one week later
-		$meeting_schedule = date('Y-m-d H:i:s', strtotime('+1 week'));
-		$_POST['meeting_schedule'] = $meeting_schedule;
-	
+		
 		// Dynamically build the data string for the SQL query
 		foreach ($_POST as $k => $v) {
 			// Exclude 'id' and 'description' from being included in the data string

@@ -35,6 +35,7 @@ if (isset($space_id)) {
         <input type="hidden" name="id" value="<?php echo intval($id ?? 0); ?>">
         <input type="hidden" name="space_id" value="<?php echo intval($space_id ?? 0); ?>">
         <input type="hidden" name="client_id" value="<?php echo intval($client_id ?? 0); ?>">
+        <input type="hidden" name="date_end" id="date_end" value="">
 
         <div class="form-group">
             <label for="date_start" class="control-label">Rent Start Date</label>
@@ -49,6 +50,12 @@ if (isset($space_id)) {
                    value="<?php echo intval($months_to_rent ?? 1); ?>" required>
         </div>
 
+        <div class="form-group">
+            <label for="meeting_schedule" class="control-label">Meeting Schedule</label>
+            <input type="datetime-local" name="meeting_schedule" id="meeting_schedule" 
+                class="form-control form-control-sm rounded-0" 
+                value="<?php echo htmlspecialchars($meeting_schedule ?? ''); ?>" required>
+        </div>
         <div id="msg" class="text-danger"></div>
         <div id="check-availability-loader" class="d-none">
             <center>
@@ -68,7 +75,7 @@ if (isset($space_id)) {
 
         <div class="form-group">
             <label for="status" class="control-label">Status</label>
-            <select name="status" class="custom-select custom-select-sm">
+            <select name="status" id="status" class="custom-select custom-select-sm">
                 <option value="0" <?php echo isset($status) && $status == 0 ? "selected" : ''; ?>>Pending</option>
                 <option value="1" <?php echo isset($status) && $status == 1 ? "selected" : ''; ?>>Confirmed</option>
                 <option value="2" <?php echo isset($status) && $status == 2 ? "selected" : ''; ?>>Cancelled</option>
@@ -88,16 +95,36 @@ if (isset($space_id)) {
         $('#amount').val(amount);
     }
 
+    function calc_date_end() {
+        var status = $('#status').val();
+        if (status === "1") { // Check if status is Confirmed
+            var startDate = new Date($('#date_start').val());
+            var monthsToAdd = parseInt($('#months_to_rent').val()) || 1;
+
+            if (!isNaN(startDate.getTime())) {
+                startDate.setMonth(startDate.getMonth() + monthsToAdd);
+                var dateEnd = startDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+                $('#date_end').val(dateEnd);
+            }
+        } else {
+            $('#date_end').val(''); // Clear date_end if not Confirmed
+        }
+    }
+
     $(function () {
-        $('#months_to_rent').on('change', function () {
+        // Calculate amount and date_end when relevant inputs change
+        $('#date_start, #months_to_rent, #status').on('change', function () {
             calc_amount();
+            calc_date_end();
         });
+
+        // Trigger calculations on page load
+        calc_amount();
+        calc_date_end();
 
         $('#book-form').submit(function (e) {
             e.preventDefault();
             var _this = $(this);
-
-            // Debugging: Remove this line in production
             var formData = new FormData(_this[0]);
 
             start_loader();
@@ -120,7 +147,7 @@ if (isset($space_id)) {
                         alert_toast("Booking saved successfully!", 'success');
                         setTimeout(function () {
                             location.reload();
-                        }, 1000); // Reduced delay
+                        }, 1000);
                     } else if (resp.status === 'failed' && resp.msg) {
                         var el = $('<div>').addClass("alert alert-danger err-msg").text(resp.msg);
                         _this.prepend(el);

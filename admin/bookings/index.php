@@ -58,20 +58,32 @@
 							<td class="text-center"><?php echo $i++; ?></td>
 							<td><?php echo date("Y-m-d H:i", strtotime($row['date_created'])) ?></td>
 							<td>
-								<small><span class="text-muted">Start Date:</span> <?php echo date("Y-m-d", strtotime($row['date_start'])) ?></small><br>
-								<small><span class="text-muted">End Date: </span> <?php echo date("Y-m-d", strtotime($row['date_end'])) ?></small>
+								<?php 
+								if ((empty($row['date_start']) || empty($row['date_end'])) || $row['date_end'] === '0000-00-00'): ?>
+									<small class="text-muted">No Rent Schedule</small>
+								<?php else: ?>
+									<small><span class="text-muted">Start Date:</span> <?php echo !empty($row['date_start']) ? date("Y-m-d", strtotime($row['date_start'])) : 'N/A'; ?></small><br>
+									<small><span class="text-muted">End Date:</span> <?php echo (!empty($row['date_end']) && $row['date_end'] !== '0000-00-00') ? date("Y-m-d", strtotime($row['date_end'])) : 'N/A'; ?></small>
+								<?php endif; ?>
 							</td>
 							<td><?php echo $row['client'] ?></td>
 							<td><?php echo $row['address']; ?></td> <!-- New cell for Client Address -->
 							<td><?php echo $row['space_name']; ?></td> <!-- New cell for Type of Space -->
 							<td><?php echo $row['category']; ?></td> <!-- New cell for Category -->
-							<td><?php echo "Until " . date("F j, Y", strtotime($row['meeting_schedule'])); ?></td> <!-- New cell for Meeting Schedule (formatted) -->
+							<td>
+							<?php if (empty($row['meeting_schedule'])): ?>
+								<small class="text-muted">No Meeting Schedule Yet</small>
+							<?php else: ?>
+								<small><?php echo date("l, F j, Y", strtotime($row['meeting_schedule'])); ?></small>
+
+							<?php endif; ?>
+							</td>
 							<td class="text-center">
                                 <?php if($row['status'] == 0): ?>
                                     <span class="badge badge-light">Pending</span>
                                 <?php elseif($row['status'] == 1): ?>
                                     <span class="badge badge-primary">Confirmed</span>
-								<?php elseif($row['status'] == 2): ?>
+								<?php elseif($row['status'] == 2): ?>666666666
                                     <span class="badge badge-danger">Cancelled</span>
 								<?php elseif($row['status'] == 3): ?>
                                     <span class="badge badge-success">Done</span>

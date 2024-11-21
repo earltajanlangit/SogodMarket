@@ -347,7 +347,7 @@ $row = $qry->fetch_assoc(); // Fetching only one row
         
         // Create a temporary anchor element to trigger the download
         var link = document.createElement('a');
-        link.href = qrCodeUrl;S
+        link.href = qrCodeUrl;
         link.download = 'qr_code.png'; // Specify the filename for download
 
         // Append the link to the document body (required for browsers like Firefox)
