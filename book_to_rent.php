@@ -115,9 +115,16 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
                     <p>SUBSCRIBED AND SWORN to before me, in the Municipality of Sogod, Philippines, this <span class="underline">__________</span> day of <span class="underline">________________</span>, <span class="underline">__________</span>. Applicant/Affiant exhibited his/her Community Tax Receipt No. <span class="underline">__________</span> issued on <span class="underline">____________________</span>, at <span class="underline">____________________</span>, Philippines.</p>
 
                     <p><span class="underline">________________________</span> (Applicant's Signature)</p>
-                    <a href="/uploads/contract/applicationToLease.pdf" class="btn btn-info" download>
-                    Download Contract and Application Form
-                </a>
+                    <p>
+                        <a href="uploads/contracts/contractOfLease.pdf" class="btn btn-info" target="_blank" download>
+                            <i class="fas fa-download"></i> Download Contract of Lease
+                        </a>
+                    </p>
+                    <p>
+                        <a href="uploads/contracts/applicationToLease.pdf" class="btn btn-info" target="_blank" download>
+                            <i class="fas fa-download"></i> Download Application to Lease
+                        </a>
+                    </p>
                 </div>
             </div>
             <div class="modal-footer">
