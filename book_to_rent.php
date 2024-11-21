@@ -83,40 +83,42 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
                 </button>
             </div>
             <div class="modal-body">
-            <div class="container">
-                        <h2>APPLICATION TO LEASE MARKET STALL</h2>
+                <div class="container">
+                    <h2>APPLICATION TO LEASE MARKET STALL</h2>
 
-                        <p>The Chairman, Market Committee<br>Municipality of Sogod</p>
+                    <p>The Chairman, Market Committee<br>Municipality of Sogod</p>
 
-                        <p>Sir:</p>
+                    <p>Sir:</p>
 
-                        <p>I hereby apply under the following contract for the lease of Market Stall No. <span class="underline">__________</span> of the Municipal Market of Sogod. I am <span class="underline">__________</span> years of age, <span class="underline">__________</span> citizen, married to <span class="underline">__________</span>, and a resident of <span class="underline">__________</span>.</p>
+                    <p>I hereby apply under the following contract for the lease of Market Stall No. <span class="underline">__________</span> of the Municipal Market of Sogod. I am <span class="underline">__________</span> years of age, <span class="underline">__________</span> citizen, married to <span class="underline">__________</span>, and a resident of <span class="underline">__________</span>.</p>
 
-                        <p>Should the above-mentioned stall be leased to me in accordance with the market rules and regulations, I promise to hold the same under the following conditions:</p>
+                    <p>Should the above-mentioned stall be leased to me in accordance with the market rules and regulations, I promise to hold the same under the following conditions:</p>
 
-                        <ol>
-                            <li>That while I am occupying or leasing this stall (or these stalls), I shall, at all times, have my picture and that of my helper (or those of my helpers) conveniently framed and displayed conspicuously in the stall.</li>
-                            <li>That I shall keep the stall (or stalls) in good sanitary condition at all times and comply strictly with all sanitary and market rules and regulations now existing or which may hereafter be promulgated.</li>
-                            <li>That I shall pay the corresponding occupancy fee, two (2) months advance payment of the monthly rental for the booth (or booths), or stall (or stalls) in the manner prescribed by this ordinance.</li>
-                            <li>The business to be conducted in the stall (or stalls) is owned exclusively by me.</li>
-                            <li>That I will allow the Market Administrator and other authorized agency to inspect all equipment or paraphernalia used in my business during business hours to ensure that they are in accordance with the regulation set forth by the Bureau of Standard and other agencies.</li>
-                            <li>That I shall not sublease or sell this privilege of the stall (stalls or booths), or otherwise permit another person to conduct a business therein.</li>
-                            <li>Any violation on my part or on the part of my helpers of the foregoing conditions shall be sufficient cause for market authorities to cancel this contract after due process has been instituted.</li>
-                        </ol>
+                    <ol>
+                        <li>That while I am occupying or leasing this stall (or these stalls), I shall, at all times, have my picture and that of my helper (or those of my helpers) conveniently framed and displayed conspicuously in the stall.</li>
+                        <li>That I shall keep the stall (or stalls) in good sanitary condition at all times and comply strictly with all sanitary and market rules and regulations now existing or which may hereafter be promulgated.</li>
+                        <li>That I shall pay the corresponding occupancy fee, two (2) months advance payment of the monthly rental for the booth (or booths), or stall (or stalls) in the manner prescribed by this ordinance.</li>
+                        <li>The business to be conducted in the stall (or stalls) is owned exclusively by me.</li>
+                        <li>That I will allow the Market Administrator and other authorized agency to inspect all equipment or paraphernalia used in my business during business hours to ensure that they are in accordance with the regulation set forth by the Bureau of Standard and other agencies.</li>
+                        <li>That I shall not sublease or sell this privilege of the stall (stalls or booths), or otherwise permit another person to conduct a business therein.</li>
+                        <li>Any violation on my part or on the part of my helpers of the foregoing conditions shall be sufficient cause for market authorities to cancel this contract after due process has been instituted.</li>
+                    </ol>
 
-                        <p>Very Respectfully,</p>
+                    <p>Very Respectfully,</p>
 
-                        <p><span class="underline">________________________</span></p>
+                    <p><span class="underline">________________________</span></p>
 
-                        <p>I, <span class="underline">________________________</span>, do hereby state that I am the person who signed the foregoing statement/application, that I have read the same, and that the contents hereof are true to the best of my knowledge and belief.</p>
+                    <p>I, <span class="underline">________________________</span>, do hereby state that I am the person who signed the foregoing statement/application, that I have read the same, and that the contents hereof are true to the best of my knowledge and belief.</p>
 
-                        <p>Applicant</p>
+                    <p>Applicant</p>
 
-                        <p>SUBSCRIBED AND SWORN to before me, in the Municipality of Sogod, Philippines, this <span class="underline">__________</span> day of <span class="underline">________________</span>, <span class="underline">__________</span>. Applicant/Affiant exhibited his/her Community Tax Receipt No. <span class="underline">__________</span> issued on <span class="underline">____________________</span>, at <span class="underline">____________________</span>, Philippines.</p>
+                    <p>SUBSCRIBED AND SWORN to before me, in the Municipality of Sogod, Philippines, this <span class="underline">__________</span> day of <span class="underline">________________</span>, <span class="underline">__________</span>. Applicant/Affiant exhibited his/her Community Tax Receipt No. <span class="underline">__________</span> issued on <span class="underline">____________________</span>, at <span class="underline">____________________</span>, Philippines.</p>
 
-                        <p><span class="underline">________________________</span> (Applicant's Signature)</p>
-
-                    </div>
+                    <p><span class="underline">________________________</span> (Applicant's Signature)</p>
+                    <a href="/uploads/contract/applicationToLease.pdf" class="btn btn-info" download>
+                    Download Contract and Application Form
+                </a>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -125,6 +127,7 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
         </div>
     </div>
 </div>
+
 
 <script>
     // Function to calculate the end date based on start date and months to rent

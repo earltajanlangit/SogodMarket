@@ -217,7 +217,8 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                     <colgroup>
                         <col width="5%">
                         <col width="15%">
-                        <col width="25%">
+                        <col width="15%">
+                        <col width="10%">
                         <col width="20%">
                         <col width="10%">
                         <col width="15%">
@@ -227,6 +228,7 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                             <th>#</th>
                             <th>Date Booked</th>
                             <th>Rent Schedule</th>
+                            <th>Space Name</th>
                             <th>Client</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -235,7 +237,25 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                     <tbody>
                         <?php 
                             $i = 1;
-                            $qry = $conn->query("SELECT r.*, CONCAT(c.firstname, ' ', c.lastname) AS client FROM rent_list r INNER JOIN clients c ON c.id = r.client_id WHERE client_id = '{$_SESSION['id']}' ORDER BY unix_timestamp(r.date_created) DESC ");
+                            $qry = $conn->query("
+                                        SELECT 
+                                            r.*, 
+                                            CONCAT(c.firstname, ' ', c.lastname) AS client, 
+                                            s.space_name 
+                                        FROM 
+                                            rent_list r 
+                                        INNER JOIN 
+                                            clients c 
+                                            ON c.id = r.client_id 
+                                        INNER JOIN 
+                                            space_list s 
+                                            ON s.id = r.space_id 
+                                        WHERE 
+                                            client_id = '{$_SESSION['id']}' 
+                                        ORDER BY 
+                                            unix_timestamp(r.date_created) DESC
+                                    ");
+
                             while ($row = $qry->fetch_assoc()):
                         ?>
                         <tr>
@@ -245,6 +265,7 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                                 <small><span class="text-muted">Start Date:</span> <?php echo date("Y-m-d", strtotime($row['date_start'])) ?></small><br>
                                 <small><span class="text-muted">End Date: </span> <?php echo date("Y-m-d", strtotime($row['date_end'])) ?></small>
                             </td>
+                            <td><?php echo $row['space_name'] ?></td>
                             <td><?php echo $row['client'] ?></td>
                             <td class="text-center">
                                 <?php if($row['status'] == 0): ?>
@@ -326,7 +347,7 @@ $row = $qry->fetch_assoc(); // Fetching only one row
         
         // Create a temporary anchor element to trigger the download
         var link = document.createElement('a');
-        link.href = qrCodeUrl;
+        link.href = qrCodeUrl;S
         link.download = 'qr_code.png'; // Specify the filename for download
 
         // Append the link to the document body (required for browsers like Firefox)
