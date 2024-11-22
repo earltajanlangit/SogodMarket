@@ -1,5 +1,5 @@
 <?php 
-$title = "All Bike Categories";
+$title = "All Space Categories";
 $sub_title = "";
 if(isset($_GET['c']) && isset($_GET['s'])){
     $cat_qry = $conn->query("SELECT * FROM categories where md5(id) = '{$_GET['c']}'");

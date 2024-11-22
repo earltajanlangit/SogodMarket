@@ -11,37 +11,47 @@
     <button id="nextButton" class="slider-btn slider-btn-right">></button>
 </div>
 
-
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-5">
         <div class="row gx-4 gx-lg-5 row-cols-md-3 row-cols-xl-4 row-cols-sm-1 justify-content-center">
             <?php 
-              $bikes = $conn->query("SELECT b.*, c.category, bb.name as brand 
-                       FROM `space_list` b 
-                       INNER JOIN categories c ON b.category_id = c.id 
-                       INNER JOIN space_type_list bb ON b.space_type_id = bb.id 
-                       WHERE b.status = 1 AND b.quantity > 0");
+                $bikes = $conn->query(" 
+                    SELECT 
+                        c.*, 
+                        COALESCE(COUNT(sl.id), 0) AS total_rows,
+                        COALESCE(COUNT(CASE WHEN sl.quantity <= 0 THEN 1 END), 0) AS total_quantity_leq_zero,
+                        COALESCE(COUNT(CASE WHEN sl.quantity > 0 THEN 1 END), 0) AS total_quantity_gt_zero
+                    FROM 
+                        categories c
+                    LEFT JOIN 
+                        space_list sl 
+                    ON 
+                        c.id = sl.category_id AND sl.status = 1
+                    WHERE 
+                        c.status = 1
+                    GROUP BY 
+                        c.id
+                    ORDER BY 
+                        c.category ASC
+                ");
+                
                 if($bikes->num_rows > 0): 
                     while($row = $bikes->fetch_assoc()):
                         $upload_path = base_app.'/uploads/'.$row['id'];
                         $img = "/uploads/thumbnails/".$row['id'].'.png';
             ?>
-            <a class="col mb-5 text-decoration-none text-dark" href=".?p=view_bike&id=<?php echo md5($row['id']) ?>">
-                <div class="card bike-item shadow">
-                    <!-- bike image -->
-                    <img class="card-img-top w-100 bike-cover" src="<?php echo validate_image($img) ?>" alt="..." />
-                    <!-- bike details -->
-                    <div class="card-body p-4">
-                        <div class="">
-                            <!-- bike name -->
-                            <h5 class="fw-bolder"><?php echo $row['space_name'] ?></h5>
-                            <!-- bike price -->
-                            <span><b>Montly Rate: </b><?php echo number_format($row['monthly_rate']) ?></span>
-                        </div>
-                        <p class="m-0"><small>Space Type: <?php echo $row['brand'] ?></small><br>
-                        <small><?php echo $row['category'] ?></small></p>
-                        <p class="m-0 truncate-3"><small><?php echo strip_tags(html_entity_decode(stripslashes($row['description']))) ?></small></p>
+            <a class="col mb-5 text-decoration-none text-dark" href="./?p=bikes&c=<?php echo md5($row['id']) ?>">
+                <div class="card bike-item shadow rounded-3 overflow-hidden">
+                    <div class="card-body">
+                        <center>
+                            <h5 class="fw-bolder text-uppercase"><?php echo $row['category'] ?></h5>
+                            <p class="small text-muted"><?php echo $row['description'] ?></p>
+                        </center>
+                        <p class="m-0"><b>Total Space: </b><?php echo number_format($row['total_rows']) ?></p>
+                        <p class="m-0"><b>Taken: </b><?php echo number_format($row['total_quantity_leq_zero']) ?></p>
+                        <p class="m-0"><b>Available: </b><?php echo number_format($row['total_quantity_gt_zero']) ?></p>
                     </div>
+                    <img class="card-img-top bike-cover" src="<?php echo validate_image($img) ?>" alt="Bike Image" />
                 </div>
             </a>
             <?php 
@@ -88,6 +98,7 @@
             currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
             changeBackgroundImage();
         });
+
     </script>
 
     <!-- CSS for Background Slider and Buttons -->
@@ -133,5 +144,65 @@
 .slider-btn-right {
     right: 10px;
 }
+.bike-item {
+    transition: transform 0.3s ease-in-out;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
 
+.bike-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); /* More prominent shadow */
+}
+
+.bike-cover {
+    object-fit: cover;
+    height: 200px;
+    width: 100%;
+}
+
+.card-body {
+    flex-grow: 1;
+}
+
+.card-body p {
+    margin-bottom: 10px;
+}
+
+.card-body h5 {
+    font-size: 1.2rem;
+}
+
+.card-body small {
+    font-size: 0.9rem;
+}
+
+.card-img-top {
+    transition: transform 0.3s ease;
+}
+
+.card-img-top:hover {
+    transform: scale(1);
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.col {
+    display: flex;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .card-body h5 {
+        font-size: 1rem;
+    }
+
+    .bike-cover {
+        height: 180px;
+    }
+}
     </style>

@@ -1,5 +1,14 @@
 <?php 
-$bikes = $conn->query("SELECT  b.*, c.category, bb.name as brand 
+$client_id = $_SESSION['id']; // Assuming you have this session variable set for the user
+
+// Query to check if the session ID is in the rent_list table
+$check_rent_list = $conn->query("SELECT * FROM rent_list WHERE client_id = '{$client_id}'");
+
+// Check if the client_id already exists in rent_list
+$is_rented = $check_rent_list->num_rows > 0;
+
+// Fetch space details
+$bikes = $conn->query("SELECT b.*, c.category, bb.name as brand 
                         FROM `space_list` b 
                         INNER JOIN categories c ON b.category_id = c.id 
                         INNER JOIN space_type_list bb ON b.space_type_id = bb.id 
@@ -46,10 +55,17 @@ if($bikes->num_rows > 0){
                 <br>
                 <span><small><b>Available Unit:</b> <span id="avail"><?php echo $quantity ?></span></small></span>
                 </div>
-                <button class="btn btn-outline-dark flex-shrink-0" type="button" id="book_bike">
-                    <i class="bi-cart-fill me-1"></i>
-                    Apply
-                </button>
+                <!-- If the user has already rented a space, show a message instead of the button -->
+                <?php if($is_rented): ?>
+                    <div class="alert alert-warning">
+                        You already have a booking application.
+                    </div>
+                <?php else: ?>
+                    <button class="btn btn-outline-dark flex-shrink-0" type="button" id="book_bike">
+                        <i class="bi-cart-fill me-1"></i>
+                        Apply
+                    </button>
+                <?php endif; ?>
                 <p class="lead"><?php echo stripslashes(html_entity_decode($description)) ?></p>
             </div>
         </div>
@@ -80,7 +96,7 @@ if($bikes->num_rows > 0){
                         <div class="">
                             <h5 class="fw-bolder"><?php echo $row['space_name'] ?></h5>
                             <span><b>Price: </b><?php echo number_format($row['monthly_rate']) ?></span>
-                            <p class="m-0"><small>Brand: <?php echo $row['brand'] ?></small> <br>
+                            <p class="m-0"><small>Space Name: <?php echo $row['brand'] ?></small> <br>
                             <small><?php echo $row['category'] ?></small>
                             </p>
                             <p class="m-0 truncate-3"><small class="text-muted"><?php echo strip_tags(html_entity_decode(stripslashes($row['description']))) ?></small></p>

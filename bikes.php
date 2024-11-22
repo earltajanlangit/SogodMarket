@@ -55,15 +55,50 @@ if(isset($_GET['s'])){
                                 FROM `space_list` b 
                                 INNER JOIN categories c ON b.category_id = c.id 
                                 INNER JOIN space_type_list bb ON b.space_type_id = bb.id  
-                                WHERE b.status = 1 AND b.quantity > 0 {$whereData} 
+                                WHERE b.status = 1 {$whereData} 
                                 ORDER BY rand()";
                         $bikes = $conn->query($sql);
                         while($row = $bikes->fetch_assoc()):
                     ?>
-                    <a class="col-md-12 mb-5 text-decoration-none text-dark" href=".?p=view_bike&id=<?php echo md5($row['id']) ?>">
-                        <div class="card bike-item">
+                   <a class="col-md-12 mb-5 text-decoration-none text-dark <?php echo ($row['quantity'] <= 0) ? 'pointer-events-none' : ''; ?>" 
+                   href="<?php echo ($row['quantity'] > 0) ? '.?p=view_bike&id=' . md5($row['id']) : '#'; ?>">
+                        <div class="card bike-item position-relative">
                             <!-- bike image -->
                             <img class="card-img-top w-100" src="<?php echo validate_image('uploads/thumbnails/'.$row['id'].'.png') ?>" loading="lazy" alt="..." />
+                            <!-- Not Available overlay -->
+                            <?php if ($row['quantity'] <= 0): ?>
+                            <div class="not-available-overlay d-flex align-items-center justify-content-center">
+                                <span class="text-white fw-bold">NOT AVAILABLE</span>
+                            </div>
+                            <?php endif; ?>
+                            <!-- bike details -->
+                            <div class="card-body p-4">
+                                <div class="">
+                                    <!-- bike name -->
+                                    <h5 class="fw-bolder"><?php echo $row['space_name'] ?></h5>
+                                    <!-- bike price -->
+                                    <span><b>Monthly Rate: </b><?php echo number_format($row['monthly_rate']) ?></span>
+                                </div>
+                                <p class="m-0">
+                                    <small>Space Type: <?php echo $row['brand'] ?></small> <br>
+                                    <small><?php echo $row['category'] ?></small>
+                                </p>
+                                <p class="m-0 truncate-3">
+                                    <small><?php echo strip_tags(html_entity_decode(stripslashes($row['description']))) ?></small>
+                                </p>
+                            </div>
+                        </div>
+                    </a> <a class="col-md-12 mb-5 text-decoration-none text-dark <?php echo ($row['quantity'] <= 0) ? 'pointer-events-none' : ''; ?>" 
+                   href="<?php echo ($row['quantity'] > 0) ? '.?p=view_bike&id=' . md5($row['id']) : '#'; ?>">
+                        <div class="card bike-item position-relative">
+                            <!-- bike image -->
+                            <img class="card-img-top w-100" src="<?php echo validate_image('uploads/thumbnails/'.$row['id'].'.png') ?>" loading="lazy" alt="..." />
+                            <!-- Not Available overlay -->
+                            <?php if ($row['quantity'] <= 0): ?>
+                            <div class="not-available-overlay d-flex align-items-center justify-content-center">
+                                <span class="text-white fw-bold">NOT AVAILABLE</span>
+                            </div>
+                            <?php endif; ?>
                             <!-- bike details -->
                             <div class="card-body p-4">
                                 <div class="">
@@ -102,3 +137,22 @@ if(isset($_GET['s'])){
         </div>
     </div>
 </section>
+
+<style>
+/* Style for the Not Available overlay */
+.not-available-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+}
+
+.card.bike-item:hover .not-available-overlay {
+    opacity: 1;
+}
+</style>
