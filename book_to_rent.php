@@ -34,8 +34,8 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
         
         <!-- Start Date Field -->
         <div class="form-group">
-            <label for="date_start" class="control-label">Start Date</label>
-            <input type="date" name="date_start" id="date_start" class="form-control form-control-sm rounded-0" required>
+            <label for="date_application" class="control-label">Application Date</label>
+            <input type="date" name="date_application" id="date_application" class="form-control form-control-sm rounded-0" required>
         </div>
         
         <!-- Months to Rent Field -->

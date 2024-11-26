@@ -1,5 +1,7 @@
 <?php 
-$client_id = $_SESSION['id']; // Assuming you have this session variable set for the user
+
+// Check if the user is logged in
+$client_id = $_SESSION['id'] ?? 0;// Assuming you have this session variable set for the user
 
 // Query to check if the session ID is in the rent_list table
 $check_rent_list = $conn->query("SELECT * FROM rent_list WHERE client_id = '{$client_id}'");

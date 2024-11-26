@@ -203,6 +203,104 @@ $row = $qry->fetch_assoc(); // Fetching only one row
         </div>
     </div>
 </div>
+<div class="card rounded-0 mb-4">
+    <div class="card-body">
+        <div class="w-100 justify-content-between d-flex">
+            <h4><b>Application Steps and Status</b></h4>
+        </div>
+        <hr class="border-warning">
+
+        <!-- Application Steps Cards with Arrows -->
+        <div class="d-flex align-items-center justify-content-center flex-wrap">
+            <?php
+            // Define application steps
+            $steps = [
+                'Application Submitted',
+                'Submission of Requirements',
+                'Payments and Contract Signing',
+                'Booking Confirmed'
+            ];
+
+            // Fetch current application step from database or session
+            $current_step_index = 0; // Default to step 1
+            $qry = $conn->query("SELECT application_status FROM application_tracker WHERE client_id = '{$_SESSION['id']}' LIMIT 1");
+            if ($qry->num_rows > 0) {
+                $application = $qry->fetch_assoc();
+                $current_step_index = (int)$application['application_status']; // Assuming status is stored as a step index
+            }
+
+            // If application_status is 0, display 'No Application yet'
+            if ($current_step_index == 0) {
+                echo '<div class="col-12 text-center"><p>No Application yet</p></div>';
+            } else {
+                $total_steps = count($steps);
+                foreach ($steps as $index => $step): ?>
+                    <!-- Step Card -->
+                    <div class="card text-center mx-2 mb-3 
+                        <?php echo $index < $current_step_index ? 'bg-success text-white' : ($index == $current_step_index ? 'bg-warning text-dark' : 'bg-light text-muted'); ?>" style="min-width: 200px;">
+                        <div class="card-body">
+                            <h5 class="card-title"><?php echo $index + 1; ?>. <?php echo $step; ?></h5>
+                            <p class="card-text">
+                                <?php 
+                                if ($index < $current_step_index) {
+                                    echo 'Completed';
+                                } elseif ($index == $current_step_index) {
+                                    echo 'In Progress';
+                                } else {
+                                    echo 'Pending';
+                                }
+                                ?>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Arrow (if not the last step) -->
+                    <?php if ($index < $total_steps - 1): ?>
+                        <div class="mx-2">
+                            <i class="fas fa-arrow-right fa-2x"></i>
+                        </div>
+                    <?php endif; ?>
+                <?php endforeach;
+
+                // If the application status is 4 (Booking Confirmed), calculate the duration and remaining days
+                if ($current_step_index == 4) {
+                    // Fetch the start and end dates from the rent_list table
+                    $rent_query = $conn->query("SELECT date_start, date_end FROM rent_list WHERE client_id = '{$_SESSION['id']}' LIMIT 1");
+                    if ($rent_query->num_rows > 0) {
+                        $rent = $rent_query->fetch_assoc();
+                        $date_start = new DateTime($rent['date_start']);
+                        $date_end = new DateTime($rent['date_end']);
+                        $current_date = new DateTime();
+
+                        // Calculate the difference between the current date and end date
+                        $interval_total = $date_start->diff($date_end);
+                        $interval_remaining = $current_date->diff($date_end);
+                        
+                        $total_days = (int)$interval_total->format('%a');
+                        $remaining_days = max((int)$interval_remaining->format('%a'), 0);
+                        
+                        // Calculate percentage for the progress bar
+                        $progress_percentage = 100 - ($remaining_days / $total_days * 100);
+
+                        // Display the duration and remaining days in stylish cards
+                        echo '
+                        <div class="col-12 text-center mt-3">
+                            <div class="card text-white bg-info shadow-lg" style="max-width: 300px; margin: 0 auto;">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-calendar-day"></i> Contract Duration</h5>
+                                    <p class="card-text fs-4">' . $remaining_days + 1 . ' <span class="fs-6">days</span></p>
+                                    <p class="card-text">Duration from Start to End of your booking</p>
+                                </div>
+                            </div>
+                        </div>';
+
+                    }
+                }
+            } 
+            ?>
+        </div>
+    </div>
+</div>
 
         <!-- Rest of the content remains the same -->
         <div class="card rounded-0">

@@ -158,6 +158,7 @@
 									</div>
 									<div class="modal-footer">
 										<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+										<button type="button" class="btn btn-success approve_application" data-client-id="<?php echo $row['client_id']; ?>">Approve</button>
 									</div>
 								</div>
 							</div>
@@ -185,6 +186,12 @@
 		$('.view_payments').click(function(){
 			uni_modal('View Payments', 'bookings/view_payments.php?id=' + $(this).attr('data-id'), 'mid-large');
 		})
+		$('.approve_application').click(function() {
+        var clientId = $(this).data('client-id');
+        if (confirm("Are you sure you want to approve this application?")) {
+            approveApplication(clientId);
+        }
+   		 })
 	})
 
 	function delete_booking($id){
@@ -209,4 +216,27 @@
 			}
 		})
 	}
+	function approveApplication(clientId) {
+    start_loader(); // Show loader while processing
+    $.ajax({
+        url: _base_url_ + "classes/Master.php?f=approve_application", // Endpoint to handle approval
+        method: "POST",
+        data: { client_id: clientId },
+        dataType: "json",
+        error: function(err) {
+            console.log(err);
+            alert_toast("An error occurred while approving the application.", 'error');
+            end_loader(); // Hide loader
+        },
+        success: function(resp) {
+            if (typeof resp == 'object' && resp.status == 'success') {
+                alert_toast("Application approved successfully.", 'success');
+                location.reload(); // Reload the page to reflect changes
+            } else {
+                alert_toast("An error occurred. Please try again.", 'error');
+                end_loader(); // Hide loader
+            }
+        }
+    });
+}
 </script>

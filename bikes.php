@@ -60,35 +60,7 @@ if(isset($_GET['s'])){
                         $bikes = $conn->query($sql);
                         while($row = $bikes->fetch_assoc()):
                     ?>
-                   <a class="col-md-12 mb-5 text-decoration-none text-dark <?php echo ($row['quantity'] <= 0) ? 'pointer-events-none' : ''; ?>" 
-                   href="<?php echo ($row['quantity'] > 0) ? '.?p=view_bike&id=' . md5($row['id']) : '#'; ?>">
-                        <div class="card bike-item position-relative">
-                            <!-- bike image -->
-                            <img class="card-img-top w-100" src="<?php echo validate_image('uploads/thumbnails/'.$row['id'].'.png') ?>" loading="lazy" alt="..." />
-                            <!-- Not Available overlay -->
-                            <?php if ($row['quantity'] <= 0): ?>
-                            <div class="not-available-overlay d-flex align-items-center justify-content-center">
-                                <span class="text-white fw-bold">NOT AVAILABLE</span>
-                            </div>
-                            <?php endif; ?>
-                            <!-- bike details -->
-                            <div class="card-body p-4">
-                                <div class="">
-                                    <!-- bike name -->
-                                    <h5 class="fw-bolder"><?php echo $row['space_name'] ?></h5>
-                                    <!-- bike price -->
-                                    <span><b>Monthly Rate: </b><?php echo number_format($row['monthly_rate']) ?></span>
-                                </div>
-                                <p class="m-0">
-                                    <small>Space Type: <?php echo $row['brand'] ?></small> <br>
-                                    <small><?php echo $row['category'] ?></small>
-                                </p>
-                                <p class="m-0 truncate-3">
-                                    <small><?php echo strip_tags(html_entity_decode(stripslashes($row['description']))) ?></small>
-                                </p>
-                            </div>
-                        </div>
-                    </a> <a class="col-md-12 mb-5 text-decoration-none text-dark <?php echo ($row['quantity'] <= 0) ? 'pointer-events-none' : ''; ?>" 
+                  <a class="col-md-12 mb-5 text-decoration-none text-dark <?php echo ($row['quantity'] <= 0) ? 'pointer-events-none' : ''; ?>" 
                    href="<?php echo ($row['quantity'] > 0) ? '.?p=view_bike&id=' . md5($row['id']) : '#'; ?>">
                         <div class="card bike-item position-relative">
                             <!-- bike image -->

@@ -20,7 +20,8 @@
                         c.*, 
                         COALESCE(COUNT(sl.id), 0) AS total_rows,
                         COALESCE(COUNT(CASE WHEN sl.quantity <= 0 THEN 1 END), 0) AS total_quantity_leq_zero,
-                        COALESCE(COUNT(CASE WHEN sl.quantity > 0 THEN 1 END), 0) AS total_quantity_gt_zero
+                        COALESCE(COUNT(CASE WHEN sl.quantity > 0 THEN 1 END), 0) AS total_quantity_gt_zero,
+                        c.category_image
                     FROM 
                         categories c
                     LEFT JOIN 
@@ -37,8 +38,8 @@
                 
                 if($bikes->num_rows > 0): 
                     while($row = $bikes->fetch_assoc()):
-                        $upload_path = base_app.'/uploads/'.$row['id'];
-                        $img = "/uploads/thumbnails/".$row['id'].'.png';
+                        $upload_path = base_app.'/uploads/'.$row['category_image'];
+                        $img = "/uploads/categories/".$row['category_image'];
             ?>
             <a class="col mb-5 text-decoration-none text-dark" href="./?p=bikes&c=<?php echo md5($row['id']) ?>">
                 <div class="card bike-item shadow rounded-3 overflow-hidden">

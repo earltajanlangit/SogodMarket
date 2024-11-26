@@ -77,46 +77,82 @@ Class Master extends DBConnection {
 
 	}
 	function save_category(){
+		// Extract POST data
 		extract($_POST);
-		$data = "";
-		foreach($_POST as $k =>$v){
-			if(!in_array($k,array('id','description'))){
-				if(!empty($data)) $data .=",";
-				$data .= " `{$k}`='{$v}' ";
-			}
-		}
-		if(isset($_POST['description'])){
-			if(!empty($data)) $data .=",";
-				$data .= " `description`='".addslashes(htmlentities($description))."' ";
-		}
-		$check = $this->conn->query("SELECT * FROM `categories` where `category` = '{$category}' ".(!empty($id) ? " and id != {$id} " : "")." ")->num_rows;
-		if($this->capture_err())
-			return $this->capture_err();
-		if($check > 0){
+	
+		// Ensure category is set
+		if (!isset($category) || empty($category)) {
 			$resp['status'] = 'failed';
-			$resp['msg'] = "Category already exist.";
+			$resp['msg'] = "Category name is required.";
 			return json_encode($resp);
 			exit;
 		}
-		if(empty($id)){
-			$sql = "INSERT INTO `categories` set {$data} ";
-			$save = $this->conn->query($sql);
-		}else{
-			$sql = "UPDATE `categories` set {$data} where id = '{$id}' ";
-			$save = $this->conn->query($sql);
+	
+		// Prepare the data for insertion or update
+		$data = "";
+		foreach ($_POST as $k => $v) {
+			// Skip 'id' and 'description' as they are handled separately
+			if (!in_array($k, array('id', 'description', 'category_image'))) {
+				if (!empty($data)) $data .= ",";
+				$data .= " `{$k}`='{$v}' ";
+			}
 		}
-		if($save){
-			$resp['status'] = 'success';
-			if(empty($id))
-				$this->settings->set_flashdata('success',"New Category successfully saved.");
-			else
-				$this->settings->set_flashdata('success',"Category successfully updated.");
-		}else{
+	
+		// Handle description
+		if (isset($_POST['description'])) {
+			if (!empty($data)) $data .= ",";
+			$data .= " `description`='" . addslashes(htmlentities($description)) . "' ";
+		}
+	
+		// Handle image upload (if provided)
+		if (isset($_FILES['category_image']) && $_FILES['category_image']['error'] == 0) {
+			$imageName = $_FILES['category_image']['name'];
+			$imageTmpName = $_FILES['category_image']['tmp_name'];
+			$imageDestination = '../uploads/categories/' . $imageName; // You may want to generate a unique name here
+			if (move_uploaded_file($imageTmpName, $imageDestination)) {
+				// Append the image field to the data string
+				if (!empty($data)) $data .= ",";
+				$data .= " `category_image` = '{$imageName}' ";
+			}
+		}
+	
+		// Check if category already exists (excluding current category ID)
+		$check = $this->conn->query("SELECT * FROM `categories` WHERE `category` = '{$category}'" . (!empty($id) ? " AND id != {$id}" : ""))->num_rows;
+	
+		if ($this->capture_err()) return $this->capture_err();
+	
+		if ($check > 0) {
 			$resp['status'] = 'failed';
-			$resp['err'] = $this->conn->error."[{$sql}]";
+			$resp['msg'] = "Category already exists.";
+			return json_encode($resp);
+			exit;
 		}
+	
+		// Insert or update based on the presence of an ID
+		if (empty($id)) {
+			$sql = "INSERT INTO `categories` SET {$data}";
+			$save = $this->conn->query($sql);
+		} else {
+			$sql = "UPDATE `categories` SET {$data} WHERE id = '{$id}'";
+			$save = $this->conn->query($sql);
+		}
+	
+		// Return success or failure response
+		if ($save) {
+			$resp['status'] = 'success';
+			if (empty($id))
+				$this->settings->set_flashdata('success', "New Category successfully saved.");
+			else
+				$this->settings->set_flashdata('success', "Category successfully updated.");
+		} else {
+			$resp['status'] = 'failed';
+			$resp['err'] = $this->conn->error . "[{$sql}]";
+		}
+	
 		return json_encode($resp);
 	}
+	
+
 	function delete_category(){
 		extract($_POST);
 		$del = $this->conn->query("DELETE FROM `categories` where id = '{$id}'");
@@ -334,7 +370,6 @@ Class Master extends DBConnection {
 			$_POST['client_id'] = $_SESSION['id'];
 		}
 	
-		
 		// Dynamically build the data string for the SQL query
 		foreach ($_POST as $k => $v) {
 			// Exclude 'id' and 'description' from being included in the data string
@@ -361,9 +396,9 @@ Class Master extends DBConnection {
 			$resp['status'] = 'success';
 	
 			// Send SMS notification using Twilio
-			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application has been submitted. Please visit our office by $meeting_schedule.";
+			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application has been submitted.";
 			$account_id = "ACf135ab5e39c48fcdbb605db4696c768c";
-			$auth_token = "b7b2584d341e89e744ea14b5f1ddec8e";
+			$auth_token = "ed510a72e4156055d953ec4a167d96e8";
 			$client = new Client($account_id, $auth_token);
 			$twilio_number = "+12242315707";
 			$number = "+63 991 960 9412";
@@ -374,6 +409,20 @@ Class Master extends DBConnection {
 				'body' => $message
 			]);
 	
+			// Check if the record exists in the application_tracker table
+			$check_application_tracker = "SELECT * FROM `application_tracker` WHERE `client_id` = '{$_SESSION['id']}'";
+			$result = $this->conn->query($check_application_tracker);
+	
+			if ($result->num_rows == 0) {
+				// If no record exists, insert a new record
+				$insert_status_sql = "INSERT INTO `application_tracker` (`client_id`, `application_status`) VALUES ('{$_SESSION['id']}', 1)";
+				$this->conn->query($insert_status_sql);
+			} else {
+				// If record exists, update the application status
+				$update_status_sql = "UPDATE `application_tracker` SET `application_status` = 1 WHERE `client_id` = '{$_SESSION['id']}'";
+				$this->conn->query($update_status_sql);
+			}
+	
 		} else {
 			$resp['status'] = 'failed';
 			$resp['err'] = $this->conn->error . "[{$sql}]";
@@ -382,6 +431,7 @@ Class Master extends DBConnection {
 		// Return the response as JSON
 		return json_encode($resp);
 	}
+	
 	
 	function save_booking() {
 		extract($_POST);
@@ -412,6 +462,8 @@ Class Master extends DBConnection {
 					$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` - 1 WHERE `id` = '{$space_id}'";
 					$update = $this->conn->query($update_sql);
                 	$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Confirmed";
+					 $tracker_sql = "UPDATE `application_tracker` SET `application_status` = 4 WHERE `client_id` = '{$client_id}'";
+    				$tracker_update = $this->conn->query($tracker_sql);
          
 					if (!$update) {
 						$resp['status'] = 'failed';
@@ -430,7 +482,7 @@ Class Master extends DBConnection {
                		$auth_token = "e287cd99a0befe9a246bdf57759c8cc7";
                 	$client = new Client($account_id, $auth_token);
                 	$twilio_number = "+12093754713";
-                	$number = "+63 936 064 8398";
+                	$number = "+63 991 960 9412";
                 
                 	$client->messages->create($number, [
                     'from' => $twilio_number,
@@ -704,6 +756,8 @@ Class Master extends DBConnection {
 		// INSERT operation
 		$sql = "INSERT INTO `payments` set {$data} ";
 		$save = $this->conn->query($sql);
+		$tracker_sql = "UPDATE `application_tracker` SET `application_status` = 3 WHERE `client_id` = '{$client_id}'";
+    	$tracker_update = $this->conn->query($tracker_sql);
 	
 		// Check if the save operation was successful
 		if ($save) {
@@ -737,11 +791,30 @@ Class Master extends DBConnection {
 		return json_encode($resp);
 	}
 	
+
+	function approve_application(){
+			
+		extract($_POST);
+		$stmt = $this->conn->prepare("UPDATE application_tracker SET application_status = 2 WHERE client_id = ?");
+		$stmt->bind_param("i", $client_id); // Assuming client_id is an integer
+		$success = $stmt->execute();
 	
+		if ($success) {
+			$resp['status'] = 'success';
+			$this->settings->set_flashdata('success', "Application approved successfully.");
+		} else {
+			$resp['status'] = 'failed';
+			$resp['error'] = $stmt->error; // Error from the statement
+		}
+		$stmt->close();
 	
+		return json_encode($resp);
+
+
+		}
 	}
 
-
+	
 
 $Master = new Master();
 $action = !isset($_GET['f']) ? 'none' : strtolower($_GET['f']);
@@ -804,6 +877,9 @@ switch ($action) {
 	break;
 	case 'delete_vendor':
 		echo $Master->delete_vendor();
+	break;
+	case 'approve_application':
+		echo $Master->approve_application();
 	break;
 	default:
 		// echo $sysset->index();
