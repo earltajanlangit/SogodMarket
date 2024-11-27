@@ -15,7 +15,7 @@
                 $qry = $conn->query("
                 SELECT 
                     c.*, 
-                    r.id as rent_id, 
+                    r.id as id, 
                     r.space_id, 
                     r.status, 
                     DATEDIFF(r.date_end, CURDATE()) as remaining_days,
@@ -61,10 +61,11 @@
                                     <?php endif; ?>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <button type="button" class="btn btn-danger btn-sm delete_data" data-id="<?php echo $row['rent_id']; ?>">
+                                    <button type="button" class="btn btn-danger btn-sm delete_data" data-id="<?php echo $row['id']; ?>">
                                         <i class="fas fa-trash-alt"></i> Delete
                                     </button>
-                                    <button type="button" class="btn btn-primary btn-sm edit_data" data-id="<?php echo $row['rent_id']; ?>">
+                                   
+                                    <button type="button" class="btn btn-primary btn-sm view_data" data-id="<?php echo $row['id']; ?>">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
                                 </div>
@@ -79,32 +80,45 @@
 
 <script>
     $(document).ready(function () {
-        $('.delete_data').click(function () {
-            _conf("Are you sure you want to delete this record permanently?", "delete_rent", [$(this).attr('data-id')]);
-        });
+        $('.delete_data').click(function(){
+			_conf("Are you sure to delete this bike permanently?","delete_bike",[$(this).attr('data-id')])
+		})
+		$('.table td,.table th').addClass('px-2 py-1')
+		$('.table').dataTable({
+			columnDefs: [
+				{ targets: [4, 5], orderable: false}
+			],
+			initComplete:function(settings, json){
+				$('.table td,.table th').addClass('px-2 py-1')
+			}
+		})
 
-        function delete_rent(id) {
-            start_loader();
-            $.ajax({
-                url: _base_url_ + "classes/Master.php?f=delete_vendor",
-                method: "POST",
-                data: { id: id },
-                dataType: "json",
-                error: err => {
-                    console.log(err);
-                    alert_toast("An error occurred.", 'error');
-                    end_loader();
-                },
-                success: function (resp) {
-                    if (resp && resp.status === 'success') {
-                        alert_toast("Record deleted successfully.", 'success');
-                        location.reload();
-                    } else {
-                        alert_toast("An error occurred.", 'error');
-                        end_loader();
-                    }
-                }
-            });
-        }
-    });
+        $('.view_data').click(function(){
+			uni_modal('Booking Details','bookings/view_booking.php?id='+$(this).attr('data-id'),'mid-large')
+		})
+	})
+
+    function delete_bike($id){
+		start_loader();
+		$.ajax({
+			url:_base_url_+"classes/Master.php?f=delete_vendor",
+			method:"POST",
+			data:{id: $id},
+			dataType:"json",
+			error:err=>{
+				console.log(err)
+				alert_toast("An error occured.",'error');
+				end_loader();
+			},
+			success:function(resp){
+				if(typeof resp== 'object' && resp.status == 'success'){
+					location.reload();
+				}else{
+					alert_toast("An error occured.",'error');
+					end_loader();
+				}
+			}
+		})
+ }
+   
 </script>

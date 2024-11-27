@@ -26,7 +26,6 @@
 						<th>#</th>
 						<th>Category</th>
 						<th>Space Info</th>
-						<th>Quantity</th>
 						<th>Status</th>
 						<th>Action</th>
 					</tr>
@@ -48,7 +47,6 @@
 								<small><span class="text-muted">Type of Space:</span> <?php echo $row['brand'] ?></small><br>
 								<small><span class="text-muted">Space Name:</span> <?php echo $row['space_name'] ?></small>
 							</td>
-							<td class="text-end"><?php echo number_format($row['quantity']) ?></td>
 							<td class="text-center">
                                 <?php if($row['status'] == 1): ?>
                                     <span class="badge badge-success">Active</span>

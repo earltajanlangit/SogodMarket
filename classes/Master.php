@@ -397,11 +397,11 @@ Class Master extends DBConnection {
 	
 			// Send SMS notification using Twilio
 			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application has been submitted.";
-			$account_id = "ACf135ab5e39c48fcdbb605db4696c768c";
-			$auth_token = "ed510a72e4156055d953ec4a167d96e8";
+			$account_id = "ACb7ef00de9796a02b68d600e8eed02a82";
+			$auth_token = "09fec038836df03723c42ed5cf14eca8";
 			$client = new Client($account_id, $auth_token);
-			$twilio_number = "+12242315707";
-			$number = "+63 991 960 9412";
+			$twilio_number = "+14402494264";
+			$number = "+63 965 147 9445";
 	
 			// Send SMS using Twilio
 			$client->messages->create($number, [
@@ -812,6 +812,73 @@ Class Master extends DBConnection {
 
 
 		}
+
+	function renew_contract() {
+			// Ensure session is started to access session variables
+		
+			// Validate session ID
+			if (!isset($_SESSION['id'])) {
+				$resp['status'] = 'failed';
+				$resp['error'] = 'Session expired. Please log in again.';
+				return json_encode($resp);
+			}
+		
+			$client_id = $_SESSION['id']; // Use session ID as client ID
+			extract($_POST);
+			$months_to_extend = $_POST['months_to_extend'];
+			// Ensure `months_to_extend` is provided and valid
+			if (!isset($months_to_extend) || !is_numeric($months_to_extend) || $months_to_extend <= 0) {
+				$resp['status'] = 'failed';
+				$resp['error'] = 'Invalid input. Months to extend are required and must be a positive number.';
+				return json_encode($resp);
+			}
+		
+			// Fetch current date_end and months_to_rent from the database
+			$stmt = $this->conn->prepare("SELECT date_end, months_to_rent FROM rent_list WHERE client_id = ?");
+			$stmt->bind_param("i", $client_id);
+			$stmt->execute();
+			$result = $stmt->get_result();
+		
+			if ($result->num_rows > 0) {
+				$rent = $result->fetch_assoc();
+		
+				// Calculate the new values
+				$current_date_end = new DateTime($rent['date_end']);
+				$current_months_to_rent = (int) $rent['months_to_rent'];
+				$new_date_end = $current_date_end->modify("+$months_to_extend months")->format('Y-m-d');
+				$new_months_to_rent = $current_months_to_rent + $months_to_extend;
+		
+				// Update the rent_list table
+				$update_stmt = $this->conn->prepare("UPDATE rent_list SET date_end = ?, months_to_rent = ?, status = 0 WHERE client_id = ?");
+				$update_stmt->bind_param("sii", $new_date_end, $new_months_to_rent, $client_id);
+				$success = $update_stmt->execute();
+
+			
+				$update_status_sql = "UPDATE `application_tracker` SET `application_status` = 2 WHERE `client_id` = '{$_SESSION['id']}'";
+				$this->conn->query($update_status_sql);
+		
+			
+		
+				if ($success) {
+					$resp['success'] = true;  // Update to 'success' key
+					$resp['message'] = "Contract renewed successfully.";  // Add a message key
+				} else {
+					$resp['success'] = false;  // Update to 'success' key
+					$resp['message'] = $update_stmt->error;  // Add error message
+				}
+				
+				$update_stmt->close();
+			} else {
+				$resp['status'] = 'failed';
+				$resp['error'] = 'Client not found.';
+			}
+		
+			$stmt->close();
+		
+			return json_encode($resp);
+		}
+		
+			
 	}
 
 	
@@ -881,7 +948,10 @@ switch ($action) {
 	case 'approve_application':
 		echo $Master->approve_application();
 	break;
+	case 'renew_contract':
+		echo $Master->renew_contract();
+	break;
 	default:
-		// echo $sysset->index();
+		// echo $sysset->index(); 
 		break;
 }

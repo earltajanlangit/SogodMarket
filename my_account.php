@@ -51,20 +51,20 @@ require_once('config.php');
                         // Check if the user has an active contract
                         $qry = $conn->query("SELECT * FROM rent_list WHERE client_id = '{$_SESSION['id']}' AND status = 1 ORDER BY date_end DESC LIMIT 1");
                         $contract_active = false;
-                        $remaining_days = 0;
+                        $remaining_days1 = 0;
                         if ($qry->num_rows > 0) {
                             $row = $qry->fetch_assoc();
                             $end_date = strtotime($row['date_end']);
                             $current_date = time();
-                            $remaining_days = ceil(($end_date - $current_date) / (60 * 60 * 24)); // Calculate remaining days
+                            $remaining_days1 = ceil(($end_date - $current_date) / (60 * 60 * 24)); // Calculate remaining days
 
-                            if ($remaining_days >= 0) {
+                            if ($remaining_days1 >= 0) {
                                 $contract_active = true;
                             }
                         }
 
                         if ($contract_active) {
-                            echo '<div class="contract-status"><i class="fa fa-check-circle"></i> Contract is Active - ' . $remaining_days . ' days remaining</div>';
+                            echo '<div class="contract-status"><i class="fa fa-check-circle"></i> Contract is Active - ' . $remaining_days1 . ' days remaining</div>';
                         } else {
                             echo '<div class="contract-status contract-status-inactive"><i class="fa fa-times-circle"></i> No Active Contract</div>';
                         }
@@ -203,6 +203,33 @@ $row = $qry->fetch_assoc(); // Fetching only one row
         </div>
     </div>
 </div>
+
+<!-- Renew Contract Modal -->
+<div class="modal fade" id="renewContractModal" tabindex="-1" role="dialog" aria-labelledby="renewContractModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="renewContractModalLabel">Renew Contract</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="renew_contract.php" method="POST" id="renewContractForm">
+                <div class="modal-body">
+                    <!-- Months to Renew Input -->
+                    <div class="form-group">
+                        <label for="months_to_extend">Months to Renew</label>
+                        <input type="number" class="form-control" id="months_to_extend" name="months_to_extend" min="1" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Renew</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <div class="card rounded-0 mb-4">
     <div class="card-body">
         <div class="w-100 justify-content-between d-flex">
@@ -232,7 +259,7 @@ $row = $qry->fetch_assoc(); // Fetching only one row
             // If application_status is 0, display 'No Application yet'
             if ($current_step_index == 0) {
                 echo '<div class="col-12 text-center"><p>No Application yet</p></div>';
-            } else {
+             } else {
                 $total_steps = count($steps);
                 foreach ($steps as $index => $step): ?>
                     <!-- Step Card -->
@@ -271,29 +298,44 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                         $date_start = new DateTime($rent['date_start']);
                         $date_end = new DateTime($rent['date_end']);
                         $current_date = new DateTime();
-
+                
                         // Calculate the difference between the current date and end date
                         $interval_total = $date_start->diff($date_end);
                         $interval_remaining = $current_date->diff($date_end);
-                        
+                
                         $total_days = (int)$interval_total->format('%a');
                         $remaining_days = max((int)$interval_remaining->format('%a'), 0);
-                        
+                
                         // Calculate percentage for the progress bar
                         $progress_percentage = 100 - ($remaining_days / $total_days * 100);
-
-                        // Display the duration and remaining days in stylish cards
-                        echo '
-                        <div class="col-12 text-center mt-3">
+                
+                        // Display content based on the remaining days
+                        echo '<div class="col-12 text-center mt-3">';
+                        if ($remaining_days1 <= 0) {
+                            // Display the Renew button
+                            echo '
+                            <div class="card text-white bg-warning shadow-lg" style="max-width: 300px; margin: 0 auto;">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-redo-alt"></i> Renew Contract</h5>
+                                    <p class="card-text fs-4">Your contract has ended!</p>
+                                 
+                                    <button type="button" class="btn btn-primary"  data-toggle="modal" data-target="#renewContractModal">
+                                                <i></i> renew
+                                            </button>
+                                </div>
+                            </div>';
+                        } else {
+                            // Display the duration and remaining days
+                            echo '
                             <div class="card text-white bg-info shadow-lg" style="max-width: 300px; margin: 0 auto;">
                                 <div class="card-body">
                                     <h5 class="card-title"><i class="fas fa-calendar-day"></i> Contract Duration</h5>
-                                    <p class="card-text fs-4">' . $remaining_days + 1 . ' <span class="fs-6">days</span></p>
+                                    <p class="card-text fs-4">' . $remaining_days1 . ' <span class="fs-6">days remaining</span></p>
                                     <p class="card-text">Duration from Start to End of your booking</p>
                                 </div>
-                            </div>
-                        </div>';
-
+                            </div>';
+                        }
+                        echo '</div>';
                     }
                 }
             } 
@@ -319,7 +361,6 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                         <col width="10%">
                         <col width="20%">
                         <col width="10%">
-                        <col width="15%">
                     </colgroup>
                     <thead>
                         <tr class="bg-navy text-white">
@@ -329,7 +370,6 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                             <th>Space Name</th>
                             <th>Client</th>
                             <th>Status</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -378,17 +418,7 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                                     <span class="badge badge-danger">Cancelled</span>
                                 <?php endif; ?>
                             </td>
-                            <td align="center">
-                                <button type="button" class="btn btn-flat btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
-                                    Action
-                                    <span class="sr-only">Toggle Dropdown</span>
-                                </button>
-                                <div class="dropdown-menu" role="menu">
-                                    <a class="dropdown-item view_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>">
-                                        <span class="fa fa-th-list text-dark"></span> View Details
-                                    </a>
-                                </div>
-                            </td>
+                           
                         </tr>
                         <?php endwhile; ?>
                     </tbody>
@@ -457,42 +487,79 @@ $row = $qry->fetch_assoc(); // Fetching only one row
         // Remove the link from the DOM after download
         document.body.removeChild(link);
     });
+
     $(document).ready(function() {
-    // Handle the form submission
-    $('#addDocumentForm').submit(function(e) {
-        e.preventDefault(); // Prevent the default form submission
+        // Handle the addDocumentForm submission
+        $('#addDocumentForm').submit(function(e) {
+            e.preventDefault(); // Prevent the default form submission
 
-        // Create a FormData object to send the form data
-        var formData = new FormData(this);
+            // Create a FormData object to send the form data
+            var formData = new FormData(this);
 
-        // Perform AJAX request
-        $.ajax({
-    url: _base_url_ + "classes/Master.php?f=add_document",  // URL path to submit the form
-    type: 'POST',
-    data: formData,
-    processData: false,  // Prevent jQuery from automatically transforming the data into a query string
-    contentType: false,  // Let the browser set the content type
-    success: function(response) {
-        // Ensure the response is a JSON object
-        if (typeof response === "string") {
-            response = JSON.parse(response);
+            // Perform AJAX request
+            $.ajax({
+                url: _base_url_ + "classes/Master.php?f=add_document",  // URL path to submit the form
+                type: 'POST',
+                data: formData,
+                processData: false,  // Prevent jQuery from automatically transforming the data into a query string
+                contentType: false,  // Let the browser set the content type
+                success: function(response) {
+                    // Ensure the response is a JSON object
+                    if (typeof response === "string") {
+                        response = JSON.parse(response);
+                    }
+
+                    if (response.success) {
+                        alert(response.message);  // Success message from the server
+                        $('#addDocumentModal').modal('hide'); // Close the modal
+                        window.location.href = "http://localhost/sogodmarket/?p=my_account"; // Redirect to the desired page
+                    } else {
+                        alert(response.message);  // Failure message from the server
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Handle error
+                    alert("An error occurred. Please try again.");
+                }
+            });
+        });
+
+        $('#renewContractForm').submit(function(e) {
+    e.preventDefault(); // Prevent the default form submission
+
+    // Create a FormData object to send the form data
+    var formData = new FormData(this);
+
+    // Perform AJAX request
+    $.ajax({
+        url: _base_url_ + "classes/Master.php?f=renew_contract",  // URL path to submit the form
+        type: 'POST',
+        data: formData,
+        processData: false,  // Prevent jQuery from automatically transforming the data into a query string
+        contentType: false,  // Let the browser set the content type
+        success: function(response) {
+            // Ensure the response is a JSON object
+            try {
+                response = JSON.parse(response); // Safely parse the response
+
+                if (response.success) {
+                    alert(response.message);  // Success message from the server
+                    $('#renewContractModal').modal('hide'); // Close the modal
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert(response.message);  // Failure message from the server
+                }
+            } catch (error) {
+                alert("Error parsing response.");
+            }
+        },
+        error: function(xhr, status, error) {
+            // Handle error
+            alert("An error occurred. Please try again.");
         }
-
-        if (response.success) {
-            alert(response.message);  // Success message from the server
-            $('#addDocumentModal').modal('hide'); // Close the modal
-            window.location.href = "http://localhost/sogodmarket/?p=my_account"; // Redirect to the desired page
-        } else {
-            alert(response.message);  // Failure message from the server
-        }
-    },
-    error: function(xhr, status, error) {
-        // Handle error
-        alert("An error occurred. Please try again.");
-    }
-});
-
     });
 });
+    });
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
