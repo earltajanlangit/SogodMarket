@@ -59,7 +59,7 @@
 							<td><?php echo date("Y-m-d H:i", strtotime($row['date_created'])) ?></td>
 							<td>
 								<?php 
-								if ((empty($row['date_start']) || empty($row['date_end'])) || $row['date_end'] === '0000-00-00'): ?>
+								if ((empty($row['date_start']) || empty($row['date_end'])) || $row['date_end'] === '0000-00-00' || $row['date_start'] === '0000-00-00'): ?>
 									<small class="text-muted">No Rent Schedule</small>
 								<?php else: ?>
 									<small><span class="text-muted">Start Date:</span> <?php echo !empty($row['date_start']) ? date("Y-m-d", strtotime($row['date_start'])) : 'N/A'; ?></small><br>

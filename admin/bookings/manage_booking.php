@@ -35,7 +35,7 @@ if (isset($space_id)) {
         <input type="hidden" name="id" value="<?php echo intval($id ?? 0); ?>">
         <input type="hidden" name="space_id" value="<?php echo intval($space_id ?? 0); ?>">
         <input type="hidden" name="client_id" value="<?php echo intval($client_id ?? 0); ?>">
-        <input type="hidden" name="date_end" id="date_end" value="">
+        <input type="hidden" name="date_end" id="date_end" value="<?php echo htmlspecialchars($date_end ?? ''); ?>">
 
         <div class="form-group">
             <label for="date_start" class="control-label">Rent Start Date</label>
@@ -97,7 +97,9 @@ if (isset($space_id)) {
 
     function calc_date_end() {
         var status = $('#status').val();
-        if (status === "1") { // Check if status is Confirmed
+        var currentDateEnd = $('#date_end').val(); // Preserve existing value
+
+        if (status === "1") { // Update only if status is Confirmed
             var startDate = new Date($('#date_start').val());
             var monthsToAdd = parseInt($('#months_to_rent').val()) || 1;
 
@@ -107,7 +109,7 @@ if (isset($space_id)) {
                 $('#date_end').val(dateEnd);
             }
         } else {
-            $('#date_end').val(''); // Clear date_end if not Confirmed
+            $('#date_end').val(currentDateEnd); // Keep the existing value
         }
     }
 

@@ -474,6 +474,8 @@ Class Master extends DBConnection {
 					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Pending";
 				}elseif ($status == 2){
 					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Cancelled";
+					$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` + 1 WHERE `id` = '{$space_id}'";
+					$update = $this->conn->query($update_sql);
 				}elseif ($status == 3){
 					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Done";
 				}

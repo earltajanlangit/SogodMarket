@@ -139,16 +139,16 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 <script>
     // Function to calculate the end date based on start date and months to rent
     function calc_end_date() {
-        const startDate = new Date($('#date_application').val());
+        const dateApplication = new Date($('#date_application').val());
         const months = parseInt($('#months_to_rent').val());
 
-        if (isNaN(startDate.getTime()) || isNaN(months)) return;
+        if (isNaN(dateApplication.getTime()) || isNaN(months)) return;
 
         // Add the specified months to the start date
-        startDate.setMonth(startDate.getMonth() + months);
+        dateApplication.setMonth(dateApplication.getMonth() + months);
         
         // Format the date as YYYY-MM-DD and update the hidden date_end field
-        const dateEnd = startDate.toISOString().split('T')[0];
+        const dateEnd = dateApplication.toISOString().split('T')[0];
         $('#date_end').val(dateEnd);
     }
 
