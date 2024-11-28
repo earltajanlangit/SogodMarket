@@ -361,7 +361,7 @@ Class Master extends DBConnection {
 		}
 		return json_encode($resp);
 	}
-	function save_bookingspart2(){
+	function save_bookingspart2() {
 		extract($_POST);
 		$data = "";
 	
@@ -395,19 +395,53 @@ Class Master extends DBConnection {
 		if ($save) {
 			$resp['status'] = 'success';
 	
-			// Send SMS notification using Twilio
+			// Send SMS notification using Semaphore
 			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application has been submitted.";
-			$account_id = "ACb7ef00de9796a02b68d600e8eed02a82";
-			$auth_token = "09fec038836df03723c42ed5cf14eca8";
-			$client = new Client($account_id, $auth_token);
-			$twilio_number = "+14402494264";
-			$number = "+63 965 147 9445";
+			$api_key = "c07761afafbbeb8051c2b6fbb1e329af";
+			$number = "639667713831"; // Replace with the recipient's number
 	
-			// Send SMS using Twilio
-			$client->messages->create($number, [
-				'from' => $twilio_number,
-				'body' => $message
-			]);
+			// Semaphore API URL
+			$url = "https://api.semaphore.co/api/v4/messages";
+	
+			// Prepare the data for the request
+			$postData = [
+				'apikey' => $api_key,
+				'number' => $number,
+				'message' => $message,
+				'sendername' => 'SEMAPHORE' // Optional: Sender name (if configured)
+			];
+	
+			// Send the request using cURL
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$response = curl_exec($ch);
+			curl_close($ch);
+	
+			// Log the raw response from Semaphore for debugging
+			error_log("Semaphore Response: " . $response);
+	
+			// Decode the response
+			$semaphore_response = json_decode($response, true);
+	
+			// Check if the response is valid
+			if (json_last_error() !== JSON_ERROR_NONE) {
+				$resp['sms_status'] = 'failed';
+				$resp['sms_error'] = 'Invalid JSON response from Semaphore API';
+			} else {
+				// Check if 'status' key exists and handle the result
+				if (isset($semaphore_response['status'])) {
+					if ($semaphore_response['status'] !== 'success') {
+						$resp['sms_status'] = 'failed';
+						$resp['sms_error'] = isset($semaphore_response['message']) ? $semaphore_response['message'] : 'No message in response';
+					}
+				} else {
+					$resp['sms_status'] = 'failed';
+					$resp['sms_error'] = 'API response status not found';
+				}
+			}
 	
 			// Check if the record exists in the application_tracker table
 			$check_application_tracker = "SELECT * FROM `application_tracker` WHERE `client_id` = '{$_SESSION['id']}'";
@@ -431,6 +465,7 @@ Class Master extends DBConnection {
 		// Return the response as JSON
 		return json_encode($resp);
 	}
+	
 	
 	
 	function save_booking() {
@@ -813,10 +848,8 @@ Class Master extends DBConnection {
 
 		}
 
-	function renew_contract() {
+		function renew_contract() {
 			// Ensure session is started to access session variables
-		
-			// Validate session ID
 			if (!isset($_SESSION['id'])) {
 				$resp['status'] = 'failed';
 				$resp['error'] = 'Session expired. Please log in again.';
@@ -826,6 +859,7 @@ Class Master extends DBConnection {
 			$client_id = $_SESSION['id']; // Use session ID as client ID
 			extract($_POST);
 			$months_to_extend = $_POST['months_to_extend'];
+		
 			// Ensure `months_to_extend` is provided and valid
 			if (!isset($months_to_extend) || !is_numeric($months_to_extend) || $months_to_extend <= 0) {
 				$resp['status'] = 'failed';
@@ -834,7 +868,7 @@ Class Master extends DBConnection {
 			}
 		
 			// Fetch current date_end and months_to_rent from the database
-			$stmt = $this->conn->prepare("SELECT date_end, months_to_rent FROM rent_list WHERE client_id = ?");
+			$stmt = $this->conn->prepare("SELECT * FROM rent_list WHERE client_id = ?");
 			$stmt->bind_param("i", $client_id);
 			$stmt->execute();
 			$result = $stmt->get_result();
@@ -842,31 +876,54 @@ Class Master extends DBConnection {
 			if ($result->num_rows > 0) {
 				$rent = $result->fetch_assoc();
 		
+				// Save current state to history_of_rent_list table
+				$history_stmt = $this->conn->prepare("
+					INSERT INTO history_of_rent_list (client_id, space_id, date_start, date_end, months_to_rent, amount, date_application, status) 
+					VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+				");
+				$history_stmt->bind_param(
+					"iissdssi", 
+					$rent['client_id'], 
+					$rent['space_id'], 
+					$rent['date_start'], 
+					$rent['date_end'], 
+					$rent['months_to_rent'], 
+					$rent['amount'], 
+					$rent['date_application'], 
+					$rent['status']
+				);
+				$history_saved = $history_stmt->execute();
+				$history_stmt->close();
+				
 				// Calculate the new values
 				$current_date_end = new DateTime($rent['date_end']);
 				$current_months_to_rent = (int) $rent['months_to_rent'];
 				$new_date_end = $current_date_end->modify("+$months_to_extend months")->format('Y-m-d');
 				$new_months_to_rent = $current_months_to_rent + $months_to_extend;
 		
-				// Update the rent_list table
-				$update_stmt = $this->conn->prepare("UPDATE rent_list SET date_end = ?, months_to_rent = ?, status = 0 WHERE client_id = ?");
-				$update_stmt->bind_param("sii", $new_date_end, $new_months_to_rent, $client_id);
-				$success = $update_stmt->execute();
-
-			
-				$update_status_sql = "UPDATE `application_tracker` SET `application_status` = 2 WHERE `client_id` = '{$_SESSION['id']}'";
-				$this->conn->query($update_status_sql);
+				// Get current system date for date_application
+				$current_date_application = date('Y-m-d');
 		
-			
+				// Update the rent_list table including date_application
+				$update_stmt = $this->conn->prepare("UPDATE rent_list SET date_end = ?, months_to_rent = ?, status = 0, date_application = ? WHERE client_id = ?");
+				$update_stmt->bind_param("ssis", $new_date_end, $new_months_to_rent, $current_date_application, $client_id);
+				$success = $update_stmt->execute();
+		
+				// Update application_tracker status
+				$update_status_sql = "UPDATE `application_tracker` SET `application_status` = 2 WHERE `client_id` = ?";
+				$tracker_stmt = $this->conn->prepare($update_status_sql);
+				$tracker_stmt->bind_param("i", $client_id);
+				$tracker_stmt->execute();
+				$tracker_stmt->close();
 		
 				if ($success) {
-					$resp['success'] = true;  // Update to 'success' key
-					$resp['message'] = "Contract renewed successfully.";  // Add a message key
+					$resp['success'] = true;
+					$resp['message'] = "Contract renewed successfully.";
 				} else {
-					$resp['success'] = false;  // Update to 'success' key
-					$resp['message'] = $update_stmt->error;  // Add error message
+					$resp['success'] = false;
+					$resp['message'] = $update_stmt->error;
 				}
-				
+		
 				$update_stmt->close();
 			} else {
 				$resp['status'] = 'failed';
@@ -874,7 +931,6 @@ Class Master extends DBConnection {
 			}
 		
 			$stmt->close();
-		
 			return json_encode($resp);
 		}
 		

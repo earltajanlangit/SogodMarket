@@ -361,50 +361,78 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                         <col width="10%">
                         <col width="20%">
                         <col width="10%">
+                        <col width="5%">
                     </colgroup>
                     <thead>
                         <tr class="bg-navy text-white">
-                            <th>#</th>
+                            <th>#</th> 
                             <th>Date Booked</th>
-                            <th>Rent Schedule</th>
+                            <th>Meeting Schedule</th>
                             <th>Space Name</th>
                             <th>Client</th>
+                            <th>Months to Rent</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php 
-                            $i = 1;
-                            $qry = $conn->query("
-                                        SELECT 
-                                            r.*, 
-                                            CONCAT(c.firstname, ' ', c.lastname) AS client, 
-                                            s.space_name 
-                                        FROM 
-                                            rent_list r 
-                                        INNER JOIN 
-                                            clients c 
-                                            ON c.id = r.client_id 
-                                        INNER JOIN 
-                                            space_list s 
-                                            ON s.id = r.space_id 
-                                        WHERE 
-                                            client_id = '{$_SESSION['id']}' 
-                                        ORDER BY 
-                                            unix_timestamp(r.date_created) DESC
-                                    ");
+                    <?php 
+                        $i = 1;
+                        $qry = $conn->query("
+                            SELECT 
+                                1 AS sort_key, 
+                                r.id, 
+                                r.date_application, 
+                                r.meeting_schedule, 
+                                r.status, 
+                                CONCAT(c.firstname, ' ', c.lastname) AS client, 
+                                s.space_name, 
+                                r.months_to_rent  -- Include months_to_rent from rent_list
+                            FROM 
+                                rent_list r 
+                            INNER JOIN 
+                                clients c ON c.id = r.client_id 
+                            INNER JOIN 
+                                space_list s ON s.id = r.space_id 
+                            WHERE 
+                                r.client_id = '{$_SESSION['id']}'
+                            UNION ALL
+                            SELECT 
+                                2 AS sort_key, 
+                                hrl.id, 
+                                hrl.date_application, 
+                                hrl.meeting_schedule, 
+                                hrl.status, 
+                                CONCAT(c.firstname, ' ', c.lastname) AS client, 
+                                s.space_name, 
+                                hrl.months_to_rent  -- Include months_to_rent from history_of_rent_list
+                            FROM 
+                                history_of_rent_list hrl 
+                            INNER JOIN 
+                                clients c ON c.id = hrl.client_id 
+                            INNER JOIN 
+                                space_list s ON s.id = hrl.space_id 
+                            WHERE 
+                                hrl.client_id = '{$_SESSION['id']}'
+                            ORDER BY 
+                                sort_key ASC, 
+                                unix_timestamp(date_application) DESC
+                        ");
 
-                            while ($row = $qry->fetch_assoc()):
+                        while ($row = $qry->fetch_assoc()):
                         ?>
                         <tr>
                             <td class="text-center"><?php echo $i++; ?></td>
-                            <td><?php echo date("Y-m-d H:i", strtotime($row['date_created'])) ?></td>
+                            <td><?php echo date("Y-m-d", strtotime($row['date_application'])) ?></td>
                             <td>
-                                <small><span class="text-muted">Start Date:</span> <?php echo date("Y-m-d", strtotime($row['date_start'])) ?></small><br>
-                                <small><span class="text-muted">End Date: </span> <?php echo date("Y-m-d", strtotime($row['date_end'])) ?></small>
+                                <?php if (empty($row['meeting_schedule'])): ?>
+                                    <small class="text-muted">No Meeting Schedule Yet</small>
+                                <?php else: ?>
+                                    <small><?php echo date("l, F j, Y", strtotime($row['meeting_schedule'])); ?></small>
+                                <?php endif; ?> 
                             </td>
                             <td><?php echo $row['space_name'] ?></td>
                             <td><?php echo $row['client'] ?></td>
+                            <td><?php echo $row['months_to_rent'] ?></td>  <!-- Display the months_to_rent -->
                             <td class="text-center">
                                 <?php if($row['status'] == 0): ?>
                                     <span class="badge badge-light">Pending</span>
@@ -415,12 +443,12 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                                 <?php elseif($row['status'] == 3): ?>
                                     <span class="badge badge-warning">Done</span>
                                 <?php else: ?>
-                                    <span class="badge badge-danger">Cancelled</span>
+                                    <span class="badge badge-secondary">Unknown</span>
                                 <?php endif; ?>
                             </td>
-                           
                         </tr>
                         <?php endwhile; ?>
+
                     </tbody>
                 </table>
             </div>
