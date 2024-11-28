@@ -83,7 +83,7 @@
                                     <span class="badge badge-light">Pending</span>
                                 <?php elseif($row['status'] == 1): ?>
                                     <span class="badge badge-primary">Confirmed</span>
-								<?php elseif($row['status'] == 2): ?>666666666
+								<?php elseif($row['status'] == 2): ?>
                                     <span class="badge badge-danger">Cancelled</span>
 								<?php elseif($row['status'] == 3): ?>
                                     <span class="badge badge-success">Done</span>
