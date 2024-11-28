@@ -361,7 +361,7 @@ Class Master extends DBConnection {
 		}
 		return json_encode($resp);
 	}
-	function save_bookingspart2() {
+	function save_bookingspart2(){
 		extract($_POST);
 		$data = "";
 	
@@ -395,53 +395,19 @@ Class Master extends DBConnection {
 		if ($save) {
 			$resp['status'] = 'success';
 	
-			// Send SMS notification using Semaphore
+			// Send SMS notification using Twilio
 			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application has been submitted.";
-			$api_key = "c07761afafbbeb8051c2b6fbb1e329af";
-			$number = "639667713831"; // Replace with the recipient's number
+			$account_id = "ACb7ef00de9796a02b68d600e8eed02a82";
+			$auth_token = "09fec038836df03723c42ed5cf14eca8";
+			$client = new Client($account_id, $auth_token);
+			$twilio_number = "+14402494264";
+			$number = "+63 965 147 9445";
 	
-			// Semaphore API URL
-			$url = "https://api.semaphore.co/api/v4/messages";
-	
-			// Prepare the data for the request
-			$postData = [
-				'apikey' => $api_key,
-				'number' => $number,
-				'message' => $message,
-				'sendername' => 'SEMAPHORE' // Optional: Sender name (if configured)
-			];
-	
-			// Send the request using cURL
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			$response = curl_exec($ch);
-			curl_close($ch);
-	
-			// Log the raw response from Semaphore for debugging
-			error_log("Semaphore Response: " . $response);
-	
-			// Decode the response
-			$semaphore_response = json_decode($response, true);
-	
-			// Check if the response is valid
-			if (json_last_error() !== JSON_ERROR_NONE) {
-				$resp['sms_status'] = 'failed';
-				$resp['sms_error'] = 'Invalid JSON response from Semaphore API';
-			} else {
-				// Check if 'status' key exists and handle the result
-				if (isset($semaphore_response['status'])) {
-					if ($semaphore_response['status'] !== 'success') {
-						$resp['sms_status'] = 'failed';
-						$resp['sms_error'] = isset($semaphore_response['message']) ? $semaphore_response['message'] : 'No message in response';
-					}
-				} else {
-					$resp['sms_status'] = 'failed';
-					$resp['sms_error'] = 'API response status not found';
-				}
-			}
+			// Send SMS using Twilio
+			$client->messages->create($number, [
+				'from' => $twilio_number,
+				'body' => $message
+			]);
 	
 			// Check if the record exists in the application_tracker table
 			$check_application_tracker = "SELECT * FROM `application_tracker` WHERE `client_id` = '{$_SESSION['id']}'";
@@ -465,7 +431,6 @@ Class Master extends DBConnection {
 		// Return the response as JSON
 		return json_encode($resp);
 	}
-	
 	
 	
 	function save_booking() {
