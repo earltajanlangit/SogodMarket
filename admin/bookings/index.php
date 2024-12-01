@@ -109,6 +109,33 @@
 
 							</td>
 						</tr>
+						<!-- Set Meeting Schedule Modal -->
+							<div class="modal fade" id="setMeetingScheduleModal" tabindex="-1" role="dialog" aria-labelledby="setMeetingScheduleModalLabel" aria-hidden="true">
+								<div class="modal-dialog" role="document">
+									<div class="modal-content">
+										<div class="modal-header">
+											<h5 class="modal-title" id="setMeetingScheduleModalLabel">Set Meeting Schedule</h5>
+											<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+												<span aria-hidden="true">&times;</span>
+											</button>
+										</div>
+										<form id="setMeetingScheduleForm">
+											<div class="modal-body">
+												<div class="form-group">
+													<label for="meetingSchedule">Select Meeting Schedule:</label>
+													<input type="datetime-local" class="form-control" id="meetingSchedule" name="meeting_schedule" required>
+													<input type="hidden" id="clientIdInput" name="client_id">
+												</div>
+											</div>
+											<div class="modal-footer">
+												<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+												<button type="submit" class="btn btn-primary">Save Schedule</button>
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+
 						
 						<!-- View Documents Modal -->
 						<div class="modal fade" id="viewDocumentsModal-<?php echo $row['id']; ?>" tabindex="-1" role="dialog" aria-labelledby="viewDocumentsModalLabel" aria-hidden="true">
@@ -156,10 +183,18 @@
 											<?php endif; ?>
 										</div>
 									</div>
-									<div class="modal-footer">
+									<div class="modal-footer d-flex justify-content-between">
+										<!-- Leftmost buttons: Approve and Reject -->
+										<div>
+										<button type="button" class="btn btn-success approve_application" data-client-id="<?php echo $row['client_id']; ?>" data-id="<?php echo $row['id']; ?>">Approve</button>
+
+											<button type="button" class="btn btn-danger approve_application" data-client-id="<?php echo $row['client_id']; ?>">Reject</button>
+										</div>
+										
+										<!-- Rightmost button: Close -->
 										<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-										<button type="button" class="btn btn-success approve_application" data-client-id="<?php echo $row['client_id']; ?>">Approve</button>
 									</div>
+
 								</div>
 							</div>
 						</div>
@@ -187,11 +222,14 @@
 			uni_modal('View Payments', 'bookings/view_payments.php?id=' + $(this).attr('data-id'), 'mid-large');
 		})
 		$('.approve_application').click(function() {
-        var clientId = $(this).data('client-id');
-        if (confirm("Are you sure you want to approve this application?")) {
-            approveApplication(clientId);
-        }
-   		 })
+			 // Assuming you have a data attribute for booking ID
+			if (confirm("Are you sure you want to approve this application?")) {
+				// Pass both client_id and booking_id to the modal
+				uni_modal('Set Meeting', 'bookings/set_meeting.php?id=' + $(this).attr('data-id'), 'mid-large');
+
+
+			}
+		});
 	})
 
 	function delete_booking($id){
@@ -216,27 +254,31 @@
 			}
 		})
 	}
-	function approveApplication(clientId) {
-    start_loader(); // Show loader while processing
-    $.ajax({
-        url: _base_url_ + "classes/Master.php?f=approve_application", // Endpoint to handle approval
-        method: "POST",
-        data: { client_id: clientId },
-        dataType: "json",
-        error: function(err) {
-            console.log(err);
-            alert_toast("An error occurred while approving the application.", 'error');
-            end_loader(); // Hide loader
-        },
-        success: function(resp) {
-            if (typeof resp == 'object' && resp.status == 'success') {
-                alert_toast("Application approved successfully.", 'success');
-                location.reload(); // Reload the page to reflect changes
-            } else {
-                alert_toast("An error occurred. Please try again.", 'error');
-                end_loader(); // Hide loader
-            }
-        }
-    });
-}
+// 	function approveApplication(clientId) {
+//     start_loader(); // Show loader while processing
+//     $.ajax({
+//         url: _base_url_ + "classes/Master.php?f=approve_application", // Endpoint to handle approval
+//         method: "POST",
+//         data: { client_id: clientId },
+//         dataType: "json",
+//         error: function(err) {
+//             console.log(err);
+//             alert_toast("An error occurred while approving the application.", 'error');
+//             end_loader(); // Hide loader
+//         },
+//         success: function(resp) {
+//             if (typeof resp == 'object' && resp.status == 'success') {
+//                 alert_toast("Application approved successfully.", 'success');
+                
+// 				console.log("Opening Set Meeting Modal...");
+// 				uni_modal('Set Meeting', 'bookings/set_meeting.php?id=' + clientId, 'mid-large');
+				
+// 				end_loader(); // Reload the page to reflect changes
+//             } else {
+//                 alert_toast("An error occurred. Please try again.", 'error');
+//                 end_loader(); // Hide loader
+//             }
+//         }
+//     });
+// }
 </script>

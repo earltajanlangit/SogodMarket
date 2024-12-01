@@ -45,7 +45,7 @@
 							<td><?php echo $row['category'] ?></td>
 							<td class="lh-1" >
 								<small><span class="text-muted">Type of Space:</span> <?php echo $row['brand'] ?></small><br>
-								<small><span class="text-muted">Space Name:</span> <?php echo $row['space_name'] ?></small>
+								<small><span class="text-muted">Space Number:</span> <?php echo $row['space_name'] ?></small>
 							</td>
 							<td class="text-center">
                                 <?php if($row['status'] == 1): ?>

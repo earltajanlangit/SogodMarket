@@ -221,6 +221,9 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                         <label for="months_to_extend">Months to Renew</label>
                         <input type="number" class="form-control" id="months_to_extend" name="months_to_extend" min="1" required>
                     </div>
+                    
+                    <!-- Hidden Date Application Input -->
+                    <input type="hidden" id="date_application" name="date_application" value="<?= date('Y-m-d'); ?>">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -230,6 +233,7 @@ $row = $qry->fetch_assoc(); // Fetching only one row
         </div>
     </div>
 </div>
+
 <div class="card rounded-0 mb-4">
     <div class="card-body">
         <div class="w-100 justify-content-between d-flex">
@@ -306,9 +310,6 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                         $total_days = (int)$interval_total->format('%a');
                         $remaining_days = max((int)$interval_remaining->format('%a'), 0);
                 
-                        // Calculate percentage for the progress bar
-                        $progress_percentage = 100 - ($remaining_days / $total_days * 100);
-                
                         // Display content based on the remaining days
                         echo '<div class="col-12 text-center mt-3">';
                         if ($remaining_days1 <= 0) {
@@ -318,10 +319,13 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                                 <div class="card-body">
                                     <h5 class="card-title"><i class="fas fa-redo-alt"></i> Renew Contract</h5>
                                     <p class="card-text fs-4">Your contract has ended!</p>
-                                 
+                                    <button type="button" class="btn btn-secondary apple_new_space" >
+                                        <i></i> Apply for New Space
+                                    </button>
+                                    <p class="mt-3">or</p>
                                     <button type="button" class="btn btn-primary"  data-toggle="modal" data-target="#renewContractModal">
-                                                <i></i> renew
-                                            </button>
+                                        <i></i> Renew Current Space
+                                    </button>
                                 </div>
                             </div>';
                         } else {
@@ -498,96 +502,115 @@ $row = $qry->fetch_assoc(); // Fetching only one row
 </section>
 <script>
     document.getElementById('downloadBtn').addEventListener('click', function() {
-        // Get the QR code image URL
         var qrCodeUrl = document.getElementById('qrCodeImage').src;
-        
-        // Create a temporary anchor element to trigger the download
         var link = document.createElement('a');
         link.href = qrCodeUrl;
-        link.download = 'qr_code.png'; // Specify the filename for download
-
-        // Append the link to the document body (required for browsers like Firefox)
+        link.download = 'qr_code.png';
         document.body.appendChild(link);
-        
-        // Programmatically click the link to trigger the download
         link.click();
-        
-        // Remove the link from the DOM after download
         document.body.removeChild(link);
     });
 
     $(document).ready(function() {
-        // Handle the addDocumentForm submission
-        $('#addDocumentForm').submit(function(e) {
-            e.preventDefault(); // Prevent the default form submission
+        // Handle apply for new space
+        $('.apple_new_space').click(function(e) {
+            if (confirm("Are you sure you want to Apply for new Space?")) {
+                applyNewSpace(e); // Pass event object
+            }
+        });
 
-            // Create a FormData object to send the form data
+        // Handle form submissions
+        $('#addDocumentForm').submit(function(e) {
+            e.preventDefault();
             var formData = new FormData(this);
 
-            // Perform AJAX request
             $.ajax({
-                url: _base_url_ + "classes/Master.php?f=add_document",  // URL path to submit the form
+                url: _base_url_ + "classes/Master.php?f=add_document",
                 type: 'POST',
                 data: formData,
-                processData: false,  // Prevent jQuery from automatically transforming the data into a query string
-                contentType: false,  // Let the browser set the content type
+                processData: false,
+                contentType: false,
                 success: function(response) {
-                    // Ensure the response is a JSON object
-                    if (typeof response === "string") {
+                    try {
                         response = JSON.parse(response);
-                    }
-
-                    if (response.success) {
-                        alert(response.message);  // Success message from the server
-                        $('#addDocumentModal').modal('hide'); // Close the modal
-                        window.location.href = "http://localhost/sogodmarket/?p=my_account"; // Redirect to the desired page
-                    } else {
-                        alert(response.message);  // Failure message from the server
+                        if (response.success) {
+                            alert(response.message);
+                            $('#addDocumentModal').modal('hide');
+                            window.location.href = "http://localhost/sogodmarket/?p=my_account";
+                        } else {
+                            alert(response.message);
+                        }
+                    } catch (error) {
+                        alert("Error parsing response.");
                     }
                 },
                 error: function(xhr, status, error) {
-                    // Handle error
                     alert("An error occurred. Please try again.");
                 }
             });
         });
 
         $('#renewContractForm').submit(function(e) {
-    e.preventDefault(); // Prevent the default form submission
+            e.preventDefault();
+            var formData = new FormData(this);
 
-    // Create a FormData object to send the form data
-    var formData = new FormData(this);
-
-    // Perform AJAX request
-    $.ajax({
-        url: _base_url_ + "classes/Master.php?f=renew_contract",  // URL path to submit the form
-        type: 'POST',
-        data: formData,
-        processData: false,  // Prevent jQuery from automatically transforming the data into a query string
-        contentType: false,  // Let the browser set the content type
-        success: function(response) {
-            // Ensure the response is a JSON object
-            try {
-                response = JSON.parse(response); // Safely parse the response
-
-                if (response.success) {
-                    alert(response.message);  // Success message from the server
-                    $('#renewContractModal').modal('hide'); // Close the modal
-                    location.reload(); // Reload the page to reflect changes
-                } else {
-                    alert(response.message);  // Failure message from the server
+            $.ajax({
+                url: _base_url_ + "classes/Master.php?f=renew_contract",
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    try {
+                        response = JSON.parse(response);
+                        if (response.success) {
+                            alert(response.message);
+                            $('#renewContractModal').modal('hide');
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    } catch (error) {
+                        alert("Error parsing response.");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("An error occurred. Please try again.");
                 }
-            } catch (error) {
-                alert("Error parsing response.");
+            });
+        });
+    });
+
+    function applyNewSpace(e) {
+        e.preventDefault();
+        var form = $('#applyForm')[0]; // Reference the form
+
+        var formData = new FormData(form);
+
+        $.ajax({
+            url: _base_url_ + "classes/Master.php?f=apply_new_space",
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                try {
+                    response = JSON.parse(response);
+                    if (response.success) {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                } catch (error) {
+                    alert("Error parsing response.");
+                }
+            },
+            error: function(xhr, status, error) {
+                alert("An error occurred. Please try again.");
             }
-        },
-        error: function(xhr, status, error) {
-            // Handle error
-            alert("An error occurred. Please try again.");
-        }
-    });
-});
-    });
+        });
+    }
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>

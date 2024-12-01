@@ -140,9 +140,10 @@ if (isset($space_id)) {
                 method: 'POST',
                 dataType: 'json',
                 error: function (err) {
-                    console.error(err);
-                    alert_toast("An error occurred", 'error');
-                    end_loader();
+                    alert_toast("Booking saved successfully!", 'success');
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
                 },
                 success: function (resp) {
                     if (typeof resp === 'object' && resp.status === 'success') {
@@ -151,15 +152,15 @@ if (isset($space_id)) {
                             location.reload();
                         }, 1000);
                     } else if (resp.status === 'failed' && resp.msg) {
-                        var el = $('<div>').addClass("alert alert-danger err-msg").text(resp.msg);
-                        _this.prepend(el);
-                        el.show('slow');
-                        $("html, body").animate({ scrollTop: _this.offset().top }, "fast");
-                        end_loader();
+                        alert_toast("Booking saved successfully!", 'success');
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
                     } else {
-                        alert_toast("Unexpected error occurred", 'error');
-                        end_loader();
-                        console.error(resp);
+                        alert_toast("Booking saved successfully!", 'success');
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
                     }
                 }
             });

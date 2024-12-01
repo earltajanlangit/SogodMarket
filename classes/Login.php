@@ -77,17 +77,42 @@ if ($qry->num_rows > 0) {
         // Generate OTP and store it in the session (using a 6-digit random number)
         $_SESSION['otp'] = rand(100000, 999999);
 
-        // Sending SMS Notification Using Twilio
-        $account_id = "ACf135ab5e39c48fcdbb605db4696c768c";
-        $auth_token = "313d5b268ae30613b3033b4340a53ff3";
-        $client = new Client($account_id, $auth_token);
-        $twilio_number = "+12242315707";
-        $number = "+63 991 960 9412";
-     
-        $client->messages->create($number, [
-            'from' => $twilio_number,
-            'body' => 'Your OTP is: ' . $_SESSION['otp']
-        ]);
+        // Send SMS Notification Using Semaphore
+                    $message = "Sogod Market Vendor's Leasing and Renewal Management System\n Your OTP is " . htmlspecialchars($_SESSION['otp']);
+					$api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
+					$sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
+	
+					// Semaphore API Endpoint    
+					$url = "https://api.semaphore.co/api/v4/messages";
+	
+					// Data to be sent
+					$sms_data = [
+						'apikey' => $api_key,
+						'number' => $_SESSION['contact'],
+						'message' => $message,
+						'sendername' => $sender_name,
+					];
+	
+					// Initialize cURL session
+					$ch = curl_init();
+					curl_setopt($ch, CURLOPT_URL, $url);
+					curl_setopt($ch, CURLOPT_POST, true);
+					curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($sms_data));
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Set timeout
+	
+					// Execute the cURL request and suppress direct output
+					$response = curl_exec($ch);
+	
+					if (curl_errno($ch)) {
+						$resp['sms_status'] = 'failed';
+						$resp['sms_error'] = curl_error($ch);
+					} else {
+						$resp['sms_status'] = 'success';
+						$resp['sms_response'] = $response;
+					}
+	
+					curl_close($ch);
 
         // Return success response
         $resp['status'] = 'success';

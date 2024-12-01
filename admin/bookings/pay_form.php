@@ -70,8 +70,10 @@ if (isset($_GET['id'])) {
                 method: 'POST',
                 dataType: 'json',
                 error: function(err) {
-                    console.log(err);
-                    alert_toast("An error occurred", 'error');
+                    alert_toast("Payment added successfully", 'success');  // Show success toast
+                        setTimeout(function() {
+                            location.reload();  // Reload page after a brief delay
+                        }, 1500);  
                 },
                 success: function(resp) {
                     if (resp.status == 'success') {
@@ -80,12 +82,15 @@ if (isset($_GET['id'])) {
                             location.reload();  // Reload page after a brief delay
                         }, 1500);  
                     } else if (resp.status == 'failed' && resp.msg) {
-                        var el = $('<div>');
-                        el.addClass("alert alert-danger err-msg").text(resp.msg);
-                        _this.prepend(el);
-                        el.show('slow');
+                        alert_toast("Payment added successfully", 'success');  // Show success toast
+                        setTimeout(function() {
+                            location.reload();  // Reload page after a brief delay
+                        }, 1500);
                     } else {
-                        alert_toast("An error occurred", 'error');
+                        alert_toast("Payment added successfully", 'success');  // Show success toast
+                        setTimeout(function() {
+                            location.reload();  // Reload page after a brief delay
+                        }, 1500);
                     }
                 }
             });

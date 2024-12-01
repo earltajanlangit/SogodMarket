@@ -1,7 +1,6 @@
 <?php
 require_once('../config.php');
 require __DIR__ . "/../admin/vendor/autoload.php";
-use Twilio\Rest\Client;
 Class Master extends DBConnection {
 	private $settings;
 	public function __construct(){
@@ -166,124 +165,158 @@ Class Master extends DBConnection {
 		return json_encode($resp);
 
 	}
-	function save_bike(){
-		foreach($_POST as $k =>$v){
+	function save_bike() {
+		// Sanitize all inputs
+		foreach ($_POST as $k => $v) {
 			$_POST[$k] = addslashes($v);
 		}
 		extract($_POST);
+	
+		// Check if 'space_name' exists and validate
+		if (!isset($_POST['space_name']) || empty(trim($_POST['space_name']))) {
+			$resp['status'] = 'failed';
+			$resp['msg'] = 'Space name is required.';
+			return json_encode($resp);
+			exit;
+		}
+		$space_name = $_POST['space_name'];
+	
+		// Prepare the data string for query
 		$data = "";
-		foreach($_POST as $k =>$v){
-			if(!in_array($k,array('id','description'))){
-				if(!empty($data)) $data .=",";
+		foreach ($_POST as $k => $v) {
+			if (!in_array($k, array('id', 'description'))) {
+				if (!empty($data)) $data .= ",";
 				$v = addslashes($v);
 				$data .= " `{$k}`='{$v}' ";
 			}
 		}
-		if(isset($_POST['description'])){
-			if(!empty($data)) $data .=",";
-				$data .= " `description`='".addslashes(htmlentities($description))."' ";
+	
+		// Add static quantity value
+		if (!empty($data)) $data .= ",";
+		$data .= " `quantity`='1' ";
+	
+		// Add 'description' if provided
+		if (isset($_POST['description'])) {
+			if (!empty($data)) $data .= ",";
+			$data .= " `description`='" . addslashes(htmlentities($description)) . "' ";
 		}
-		$check = $this->conn->query("SELECT * FROM `space_list` where `space_name` = '{$space_name}' ".(!empty($id) ? " and id != {$id} " : "")." ")->num_rows;
-		if($this->capture_err())
+	
+		$check = $this->conn->query(
+			"SELECT * FROM `space_list` WHERE `space_name` = '{$space_name}' " .
+			(!empty($id) ? " AND id != {$id} " : "") . // Exclude the current record if updating
+			" AND `category_id` = '{$category_id}' " // Ensure space_name is unique within the same category
+		)->num_rows;
+		
+		if ($this->capture_err()) {
 			return $this->capture_err();
-		if($check > 0){
+		}
+		
+		if ($check > 0) {
 			$resp['status'] = 'failed';
-			$resp['msg'] = "space already exist.";
+			$resp['msg'] = "Space already exists in this category.";
 			return json_encode($resp);
 			exit;
 		}
-		if(empty($id)){
-			$sql = "INSERT INTO `space_list` set {$data} ";
+	
+		// Insert or Update record
+		if (empty($id)) {
+			$sql = "INSERT INTO `space_list` SET {$data}";
 			$save = $this->conn->query($sql);
-			$id= $this->conn->insert_id;
-		}else{
-			$sql = "UPDATE `space_list` set {$data} where id = '{$id}' ";
+			$id = $this->conn->insert_id;
+		} else {
+			$sql = "UPDATE `space_list` SET {$data} WHERE id = '{$id}' ";
 			$save = $this->conn->query($sql);
 		}
-		if($save){
-			$resp['msg'] = " Bike Successfully saved.";
-			$thumb_fname = base_app."uploads/thumbnails/".$id.".png";
-			if(isset($_FILES['thumbnail']['tmp_name']) && !empty($_FILES['thumbnail']['tmp_name'])){
+	
+		if ($save) {
+			$resp['msg'] = "Bike Successfully saved.";
+			$thumb_fname = base_app . "uploads/thumbnails/" . $id . ".png";
+	
+			// Handle thumbnail upload
+			if (isset($_FILES['thumbnail']['tmp_name']) && !empty($_FILES['thumbnail']['tmp_name'])) {
 				$upload = $_FILES['thumbnail']['tmp_name'];
-                   $type = mime_content_type($upload);
-                   $allowed = array('image/png','image/jpeg');
-                   
-                   if(!in_array($type,$allowed)){
-                       $resp['msg'].=" But Image failed to upload due to invalid file type.";
-                   }else{
-                       $gdImg = ($type == 'image/png')? imagecreatefrompng($upload) : imagecreatefromjpeg($upload);
-                       if($gdImg){
-                            list($width, $height) = getimagesize($upload);
-                            // new size variables
-                            $new_height = 400; 
-                            $new_width = 400;
-
-                            $t_image = imagecreatetruecolor($new_width, $new_height);
-                            //Resizing the imgage
-                            imagecopyresampled($t_image, $gdImg, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-                            if(is_file($thumb_fname))
-                            unlink($thumb_fname);
-                            imagepng($t_image,$thumb_fname);
-                            imagedestroy($t_image);
-                            imagedestroy($gdImg);
-                       }else{
-                       $resp['msg'].=" But Image failed to upload due to unkown reason.";
-                       }
-                   }
+				$type = mime_content_type($upload);
+				$allowed = array('image/png', 'image/jpeg');
+	
+				if (!in_array($type, $allowed)) {
+					$resp['msg'] .= " But image failed to upload due to invalid file type.";
+				} else {
+					$gdImg = ($type == 'image/png') ? imagecreatefrompng($upload) : imagecreatefromjpeg($upload);
+					if ($gdImg) {
+						list($width, $height) = getimagesize($upload);
+						$new_height = 400;
+						$new_width = 400;
+	
+						$t_image = imagecreatetruecolor($new_width, $new_height);
+						imagecopyresampled($t_image, $gdImg, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+	
+						if (is_file($thumb_fname)) unlink($thumb_fname);
+						imagepng($t_image, $thumb_fname);
+						imagedestroy($t_image);
+						imagedestroy($gdImg);
+					} else {
+						$resp['msg'] .= " But image failed to upload due to unknown reason.";
+					}
+				}
 			}
-			if(isset($_FILES['images']['tmp_name']) && !empty($_FILES['images']['tmp_name']) && count($_FILES['images']['tmp_name']) > 0){
-                $dir = base_app.'uploads/'.$id.'/';
-                if(!is_dir($dir))
-                    mkdir($dir);
-                foreach($_FILES['images']['tmp_name'] as $k=>$v){
-					if(empty($v))
-					continue;
-                    $upload = $v;
-                    $type = mime_content_type($upload);
-                    $allowed = array('image/png','image/jpeg');
-                    $_name = str_replace(".".pathinfo($_FILES['images']['name'][$k], PATHINFO_EXTENSION),'',$_FILES['images']['name'][$k]);
-                    $ii = 1;
-                    while(true){
-                        $fname = $dir.$_name.'.png';
-                        if(is_file($fname)){
-                            $_name = $_name.'_'.($ii++);
-                        }else{
-                            break;
-                        }
-                    }
-                    if(!in_array($type,$allowed)){
-                        $resp['msg'].=" But Image failed to upload due to invalid file type.";
-                    }else{
-                        $gdImg = ($type == 'image/png')? imagecreatefrompng($upload) : imagecreatefromjpeg($upload);
-                        if($gdImg){
-                                list($width, $height) = getimagesize($upload);
-                                // new size variables
-                                $new_height = 600; 
-                                $new_width = 1000;
-
-                                $t_image = imagecreatetruecolor($new_width, $new_height);
-                                //Resizing the imgage
-                                imagecopyresampled($t_image, $gdImg, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-                                imagepng($t_image,$fname);
-                                imagedestroy($t_image);
-                                imagedestroy($gdImg);
-                        }else{
-                        $resp['msg'].=" But Image failed to upload due to unkown reason.";
-                        }
-                    }
-                }
-            }
+	
+			// Handle multiple image uploads
+			if (isset($_FILES['images']['tmp_name']) && count($_FILES['images']['tmp_name']) > 0) {
+				$dir = base_app . 'uploads/' . $id . '/';
+				if (!is_dir($dir)) mkdir($dir);
+	
+				foreach ($_FILES['images']['tmp_name'] as $k => $v) {
+					if (empty($v)) continue;
+					$upload = $v;
+					$type = mime_content_type($upload);
+					$allowed = array('image/png', 'image/jpeg');
+	
+					$_name = str_replace("." . pathinfo($_FILES['images']['name'][$k], PATHINFO_EXTENSION), '', $_FILES['images']['name'][$k]);
+					$ii = 1;
+					while (true) {
+						$fname = $dir . $_name . '.png';
+						if (is_file($fname)) {
+							$_name = $_name . '_' . ($ii++);
+						} else {
+							break;
+						}
+					}
+	
+					if (!in_array($type, $allowed)) {
+						$resp['msg'] .= " But image failed to upload due to invalid file type.";
+					} else {
+						$gdImg = ($type == 'image/png') ? imagecreatefrompng($upload) : imagecreatefromjpeg($upload);
+						if ($gdImg) {
+							list($width, $height) = getimagesize($upload);
+							$new_height = 600;
+							$new_width = 1000;
+	
+							$t_image = imagecreatetruecolor($new_width, $new_height);
+							imagecopyresampled($t_image, $gdImg, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+							imagepng($t_image, $fname);
+							imagedestroy($t_image);
+							imagedestroy($gdImg);
+						} else {
+							$resp['msg'] .= " But image failed to upload due to unknown reason.";
+						}
+					}
+				}
+			}
+	
 			$resp['status'] = 'success';
-			if(empty($id))
-				$this->settings->set_flashdata('success',"New Bike successfully saved.");
-			else
-				$this->settings->set_flashdata('success',"Bike successfully updated.");
-		}else{
+			if (empty($id)) {
+				$this->settings->set_flashdata('success', "New Bike successfully saved.");
+			} else {
+				$this->settings->set_flashdata('success', "Bike successfully updated.");
+			}
+		} else {
 			$resp['status'] = 'failed';
-			$resp['err'] = $this->conn->error."[{$sql}]";
+			$resp['err'] = $this->conn->error . "[{$sql}]";
 		}
+	
 		return json_encode($resp);
 	}
+	
 	function delete_bike(){
 		extract($_POST);
 		$del = $this->conn->query("DELETE FROM `space_list` where id = '{$id}'");
@@ -361,7 +394,9 @@ Class Master extends DBConnection {
 		}
 		return json_encode($resp);
 	}
-	function save_bookingspart2(){
+	function save_bookingspart2() {
+		header('Content-Type: application/json'); // Ensure the response is treated as JSON
+	
 		extract($_POST);
 		$data = "";
 	
@@ -382,32 +417,72 @@ Class Master extends DBConnection {
 	
 		// Check if this is an insert or an update operation
 		if (empty($id)) {
-			// Insert new record into rent_list table
 			$sql = "INSERT INTO `rent_list` SET {$data}";
 			$save = $this->conn->query($sql);
 		} else {
-			// Update existing record in rent_list table
 			$sql = "UPDATE `rent_list` SET {$data} WHERE id = '{$id}'";
 			$save = $this->conn->query($sql);
 		}
 	
-		// Check if the operation was successful
+		$resp = []; // Initialize response array
+	
 		if ($save) {
 			$resp['status'] = 'success';
 	
-			// Send SMS notification using Twilio
-			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application has been submitted.";
-			$account_id = "ACb7ef00de9796a02b68d600e8eed02a82";
-			$auth_token = "09fec038836df03723c42ed5cf14eca8";
-			$client = new Client($account_id, $auth_token);
-			$twilio_number = "+14402494264";
-			$number = "+63 965 147 9445";
+			// Fetch contact number from the clients table
+			$contact_query = "SELECT `contact` FROM `clients` WHERE `id` = '{$_POST['client_id']}'";
+			$contact_result = $this->conn->query($contact_query);
 	
-			// Send SMS using Twilio
-			$client->messages->create($number, [
-				'from' => $twilio_number,
-				'body' => $message
-			]);
+			if ($contact_result && $contact_result->num_rows > 0) {
+				$contact_row = $contact_result->fetch_assoc();
+				$contact_number = $contact_row['contact'];
+			} else {
+				$resp['status'] = 'failed';
+				$resp['err'] = 'Failed to retrieve contact number from clients table.';
+				echo json_encode($resp);
+				exit; // Ensure no further output
+			}
+	
+			// Sending SMS Notification Using Semaphore
+			$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental Application is Successfully sent. Please wait for admin confirmation.";
+			$api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
+			$sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
+	
+			// Use the fetched contact number
+			$number = $contact_number;
+	
+			// Semaphore API Endpoint    
+			$url = "https://api.semaphore.co/api/v4/messages";
+	
+			// Data to be sent
+			$sms_data = [
+				'apikey' => $api_key,
+				'number' => $number,
+				'message' => $message,
+				'sendername' => $sender_name,
+			];
+	
+			// Initialize cURL session
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($sms_data));
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Set timeout
+	
+			// Execute the cURL request and suppress direct output
+			$response = curl_exec($ch);
+	
+			if (curl_errno($ch)) {
+				$resp['sms_status'] = 'failed';
+				$resp['sms_error'] = curl_error($ch);
+			} else {
+				$resp['sms_status'] = 'success';
+				$resp['sms_response'] = $response;
+			}
+	
+			// Close the cURL session
+			curl_close($ch);
 	
 			// Check if the record exists in the application_tracker table
 			$check_application_tracker = "SELECT * FROM `application_tracker` WHERE `client_id` = '{$_SESSION['id']}'";
@@ -428,23 +503,33 @@ Class Master extends DBConnection {
 			$resp['err'] = $this->conn->error . "[{$sql}]";
 		}
 	
-		// Return the response as JSON
-		return json_encode($resp);
+		// Send JSON response
+		echo json_encode($resp);
+		exit; // Ensure no further output
 	}
-	
 	
 	function save_booking() {
 		extract($_POST);
 		$data = "";
-		if (!isset($client_id)) {
-			$_POST['client_id'] = $_SESSION['id'];
-		}
+	
+		// Ensure $status is set
+		$status = isset($_POST['status']) ? $_POST['status'] : null;
+	
+		// Prepare the data for insert or update
 		foreach ($_POST as $k => $v) {
-			if (!in_array($k, array('id', 'description'))) {
+			if (!in_array($k, array('id', 'description')) && !empty($v)) { // Ensure value is not empty
 				if (!empty($data)) $data .= ",";
 				$data .= " `{$k}`='{$v}' ";
 			}
 		}
+	
+		// Check if data is empty
+		if (empty($data)) {
+			$resp['status'] = 'failed';
+			$resp['err'] = 'No valid data to save';
+			return json_encode($resp);
+		}
+	
 		if (empty($id)) {
 			$sql = "INSERT INTO `rent_list` set {$data} ";
 			$save = $this->conn->query($sql);
@@ -452,52 +537,99 @@ Class Master extends DBConnection {
 			$sql = "UPDATE `rent_list` set {$data} where id = '{$id}' ";
 			$save = $this->conn->query($sql);
 		}
+	
 		if ($save) {
 			$resp['status'] = 'success';
 			if (!empty($id)) {
 				$this->settings->set_flashdata('success', "Rental Booking successfully updated.");
-			} 
-				// Decrement the quantity of the bike if the status is Confirmed (1)
-				if (isset($status) && $status == 1) {
-					$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` - 1 WHERE `id` = '{$space_id}'";
-					$update = $this->conn->query($update_sql);
-                	$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Confirmed";
-					 $tracker_sql = "UPDATE `application_tracker` SET `application_status` = 4 WHERE `client_id` = '{$client_id}'";
-    				$tracker_update = $this->conn->query($tracker_sql);
-         
-					if (!$update) {
-						$resp['status'] = 'failed';
-						$resp['err'] = $this->conn->error . "[{$update_sql}]";
-						return json_encode($resp);
-					}
-				} elseif ($status == 0){
-					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Pending";
-				}elseif ($status == 2){
-					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Cancelled";
-					$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` + 1 WHERE `id` = '{$space_id}'";
-					$update = $this->conn->query($update_sql);
-				}elseif ($status == 3){
-					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Done";
+			}
+	
+			// Decrement the quantity of the bike if the status is Confirmed (1)
+			if (isset($status) && $status == 1) {
+				$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` - 1 WHERE `id` = '{$space_id}'";
+				$update = $this->conn->query($update_sql);
+				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Confirmed";
+				$tracker_sql = "UPDATE `application_tracker` SET `application_status` = 4 WHERE `client_id` = '{$client_id}'";
+				$tracker_update = $this->conn->query($tracker_sql);
+	
+				if (!$update) {
+					$resp['status'] = 'failed';
+					$resp['err'] = $this->conn->error . "[{$update_sql}]";
+					return json_encode($resp);
 				}
-				// Sending SMS Notification Using Twilio
-				    $account_id = "AC4fafee2b5eecc224a18fe740a9123df2";
-               		$auth_token = "e287cd99a0befe9a246bdf57759c8cc7";
-                	$client = new Client($account_id, $auth_token);
-                	$twilio_number = "+12093754713";
-                	$number = "+63 991 960 9412";
-                
-                	$client->messages->create($number, [
-                    'from' => $twilio_number,
-                    'body' => $message 	
-                ]);
-				// end of SMS Notification Using Twilio
-			
+			} elseif ($status == 0) {
+				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Pending";
+			} elseif ($status == 2) {
+				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Cancelled";
+				$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` + 1 WHERE `id` = '{$space_id}'";
+				$update = $this->conn->query($update_sql);
+			} elseif ($status == 3) {
+				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Done";
+			}
+	
+			// Fetch the client's contact number using the client_id
+			$stmt = $this->conn->prepare("SELECT contact FROM clients WHERE id = ?");
+			$stmt->bind_param("i", $client_id);
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$client = $result->fetch_assoc();
+	
+			if ($client) {
+				$contact_number = $client['contact'];
+			} else {
+				$resp['status'] = 'failed';
+				$resp['err'] = 'Client not found';
+				return json_encode($resp);
+			}
+	
+			$stmt->close();
+	
+			// Send the SMS via Semaphore API
+			$api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
+			$sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
+			$number = $contact_number; // Recipient's number from the clients table
+	
+			// Semaphore API Endpoint
+			$url = "https://api.semaphore.co/api/v4/messages";
+	
+			// Data to be sent
+			$data = [
+				'apikey' => $api_key,
+				'number' => $number,
+				'message' => $message,
+				'sendername' => $sender_name,
+			];
+	
+			// Initialize cURL session
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	
+			// Adjust response time
+			curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Set timeout to 30 seconds (adjust as needed)
+	
+			// Execute the cURL request
+			$response = curl_exec($ch);
+	
+			// Handle errors
+			if (curl_errno($ch)) {
+				echo 'Error:' . curl_error($ch);
+			} else {
+				echo "Response: " . $response;
+			}
+	
+			// Close the cURL session
+			curl_close($ch);
 		} else {
 			$resp['status'] = 'failed';
 			$resp['err'] = $this->conn->error . "[{$sql}]";
 		}
+	
 		return json_encode($resp);
 	}
+	
 
 	function delete_booking(){
 		extract($_POST);
@@ -746,20 +878,48 @@ Class Master extends DBConnection {
 	function save_payment() {
 		extract($_POST);  // Extract POST data
 		$data = "";  // Initialize the data string
+		
+		// Debug: Print POST data
+		error_log(print_r($_POST, true)); // Logs the POST data to the PHP error log
 	
-		// Loop through POST data and build the data string for insertion or update
+		// Prepare the fields and values for the INSERT query
+		$fields = [];
+		$values = [];
+		
+		// Loop through POST data and build the fields and values for insertion
 		foreach ($_POST as $k => $v) {
 			if (!in_array($k, array('id', 'description'))) {  // Exclude unnecessary fields
-				if (!empty($data)) $data .= ",";
-				$data .= " `{$k}`='{$v}' ";  // Build the data string for SQL
+				$fields[] = "`{$k}`";
+				$values[] = "?";
 			}
 		}
 	
-		// INSERT operation
-		$sql = "INSERT INTO `payments` set {$data} ";
-		$save = $this->conn->query($sql);
+		// If no valid fields to insert, return an error
+		if (empty($fields)) {
+			$resp['status'] = 'failed';
+			$resp['err'] = 'No valid fields to insert.';
+			return json_encode($resp);
+		}	
+	
+		// Prepare the INSERT query
+		$sql = "INSERT INTO `payments` (" . implode(",", $fields) . ") VALUES (" . implode(",", $values) . ")";
+	
+		// Debug: Log the SQL query
+		error_log("SQL Query: " . $sql);  // Log the query to check the final SQL
+	
+		// Prepare the statement
+		$stmt = $this->conn->prepare($sql);
+		
+		// Bind the values dynamically (assuming all fields are strings; adjust types as needed)
+		$types = str_repeat('s', count($values)); // Assuming all fields are strings; adjust if necessary
+		$stmt->bind_param($types, ...array_values($_POST)); 
+	
+		// Execute the query
+		$save = $stmt->execute();
+	
+		// Update application_tracker if payment is saved
 		$tracker_sql = "UPDATE `application_tracker` SET `application_status` = 3 WHERE `client_id` = '{$client_id}'";
-    	$tracker_update = $this->conn->query($tracker_sql);
+		$tracker_update = $this->conn->query($tracker_sql);
 	
 		// Check if the save operation was successful
 		if ($save) {
@@ -769,22 +929,60 @@ Class Master extends DBConnection {
 				$this->settings->set_flashdata('success', "Payment details successfully updated.");
 			}
 	
-			// Update payment status and rent_list if payment is confirmed
+			// Fetch client's contact number from the clients table using the client_id from rent_list
+			$stmt = $this->conn->prepare("SELECT contact FROM clients WHERE id = ?");
+			$stmt->bind_param("i", $client_id);  // Use the client_id from rent_list
+			$stmt->execute();
+			$result = $stmt->get_result();
+			$client = $result->fetch_assoc();
+			$contact_number = $client['contact'];
+			$stmt->close();
+	
+			// Prepare the message based on the payment status
 			if (isset($status) && $status == 1) {
-				// Update rent_list with payment details
-				$update_sql = "UPDATE `rent_list` SET `payment_status` = 'Paid' WHERE `id` = '{$booking_id}'";
-				$update = $this->conn->query($update_sql);
-	
-				if (!$update) {
-					$resp['status'] = 'failed';
-					$resp['err'] = $this->conn->error . "[{$update_sql}]";
-					return json_encode($resp);
-				}
-	
 				$message = "Your payment has been successfully processed for booking #{$booking_id}.";
 			} else {
-				$message = "Your payment status has been updated.";
+				$message = "Your payment has been successfully processed for booking #{$booking_id}.";
 			}
+	
+			// Send the SMS via Semaphore API
+			$api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
+			$sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
+			$number = $contact_number; // Recipient's number from the clients table
+	
+			// Semaphore API Endpoint
+			$url = "https://api.semaphore.co/api/v4/messages";
+	
+			// Data to be sent
+			$data = [
+				'apikey' => $api_key,
+				'number' => $number,
+				'message' => $message,
+				'sendername' => $sender_name,
+			];
+	
+			// Initialize cURL session
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	
+			// Adjust response time
+			curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Set timeout to 30 seconds (adjust as needed)
+	
+			// Execute the cURL request
+			$response = curl_exec($ch);
+	
+			// Handle errors
+			if (curl_errno($ch)) {
+				echo 'Error:' . curl_error($ch);
+			} else {
+				echo "Response: " . $response;
+			}
+	
+			// Close the cURL session
+			curl_close($ch);
 		} else {
 			$resp['status'] = 'failed';
 			$resp['err'] = $this->conn->error . "[{$sql}]";
@@ -793,29 +991,104 @@ Class Master extends DBConnection {
 		return json_encode($resp);
 	}
 	
+	
 
-	function approve_application(){
-			
-		extract($_POST);
+	public function approve_application() {
+		extract($_POST); // Extract variables from the POST data
+	
+		// Prepare the first query to update the application status
 		$stmt = $this->conn->prepare("UPDATE application_tracker SET application_status = 2 WHERE client_id = ?");
 		$stmt->bind_param("i", $client_id); // Assuming client_id is an integer
 		$success = $stmt->execute();
 	
 		if ($success) {
-			$resp['status'] = 'success';
+			// Fetch the contact number of the client
+			$contact_query = "SELECT contact FROM clients WHERE id = ?";
+			$stmt_contact = $this->conn->prepare($contact_query);
+			$stmt_contact->bind_param("i", $client_id);
+			$stmt_contact->execute();
+			$stmt_contact->bind_result($contact_number);
+			$stmt_contact->fetch();
+			$stmt_contact->close();
+	
+			if (empty($contact_number)) {
+				$resp['status'] = 'failed';
+				$resp['error'] = 'Failed to retrieve contact number from clients table.';
+				return json_encode($resp);
+			}
+	
+			// Prepare the second query to update the meeting_schedule in the rent_list table
+			if (!empty($meeting_schedule) && !empty($booking_id)) {
+				$stmt2 = $this->conn->prepare("UPDATE rent_list SET meeting_schedule = ? WHERE id = ?");
+				$stmt2->bind_param("si", $meeting_schedule, $booking_id); // Bind the meeting_schedule and booking_id
+				$stmt2_success = $stmt2->execute();
+				$meeting_date = new DateTime($meeting_schedule);
+            // Convert the date to a human-readable format (e.g., "Monday, 1st December 2024 at 3:00 PM")
+               $formatted_meeting_schedule = $meeting_date->format('l, jS F Y \a\t g:i A');
+				if ($stmt2_success) {
+					// Send SMS Notification Using Semaphore
+					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Requiremest has been approved. Your meeting is scheduled on: {$formatted_meeting_schedule}.";
+					$api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
+					$sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
+	
+					// Semaphore API Endpoint    
+					$url = "https://api.semaphore.co/api/v4/messages";
+	
+					// Data to be sent
+					$sms_data = [
+						'apikey' => $api_key,
+						'number' => $contact_number,
+						'message' => $message,
+						'sendername' => $sender_name,
+					];
+	
+					// Initialize cURL session
+					$ch = curl_init();
+					curl_setopt($ch, CURLOPT_URL, $url);
+					curl_setopt($ch, CURLOPT_POST, true);
+					curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($sms_data));
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Set timeout
+	
+					// Execute the cURL request and suppress direct output
+					$response = curl_exec($ch);
+	
+					if (curl_errno($ch)) {
+						$resp['sms_status'] = 'failed';
+						$resp['sms_error'] = curl_error($ch);
+					} else {
+						$resp['sms_status'] = 'success';
+						$resp['sms_response'] = $response;
+					}
+	
+					curl_close($ch);
+	
+					$resp['status'] = 'success';
+					$this->settings->set_flashdata('success', "Application approved and meeting scheduled successfully.");
+				} else {
+					$resp['status'] = 'failed';
+					$resp['error'] = $stmt2->error; // Error from the second query
+				}
+	
+				$stmt2->close();
+			} else {
+				$resp['status'] = 'failed';
+				$resp['error'] = "Meeting schedule or booking ID is missing.";
+			}
+	
 			$this->settings->set_flashdata('success', "Application approved successfully.");
 		} else {
 			$resp['status'] = 'failed';
-			$resp['error'] = $stmt->error; // Error from the statement
+			$resp['error'] = $stmt->error; // Error from the first query
 		}
+	
 		$stmt->close();
 	
 		return json_encode($resp);
+	}
 
 
-		}
-
-		function renew_contract() {
+	function renew_contract() {
 			// Ensure session is started to access session variables
 			if (!isset($_SESSION['id'])) {
 				$resp['status'] = 'failed';
@@ -873,7 +1146,7 @@ Class Master extends DBConnection {
 		
 				// Update the rent_list table including date_application
 				$update_stmt = $this->conn->prepare("UPDATE rent_list SET date_end = ?, months_to_rent = ?, status = 0, date_application = ? WHERE client_id = ?");
-				$update_stmt->bind_param("ssis", $new_date_end, $new_months_to_rent, $current_date_application, $client_id);
+				$update_stmt->bind_param("ssis", $new_date_end, $months_to_extend, $current_date_application, $client_id);
 				$success = $update_stmt->execute();
 		
 				// Update application_tracker status
@@ -886,6 +1159,52 @@ Class Master extends DBConnection {
 				if ($success) {
 					$resp['success'] = true;
 					$resp['message'] = "Contract renewed successfully.";
+
+					// Fetch the contact number of the client
+					$contact_query = "SELECT contact FROM clients WHERE id = ?";
+					$stmt_contact = $this->conn->prepare($contact_query);
+					$stmt_contact->bind_param("i", $client_id);
+					$stmt_contact->execute();
+					$stmt_contact->bind_result($contact_number);
+					$stmt_contact->fetch();
+					$stmt_contact->close();
+	
+
+						$message = "Sogod Market Vendor's Leasing and Renewal Management System\n Contract renewed successfully.";
+						$api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
+						$sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
+		
+						// Semaphore API Endpoint    
+						$url = "https://api.semaphore.co/api/v4/messages";
+		
+						// Data to be sent
+						$sms_data = [
+							'apikey' => $api_key,
+							'number' => $contact_number,
+							'message' => $message,
+							'sendername' => $sender_name,
+						];
+		
+						// Initialize cURL session
+						$ch = curl_init();
+						curl_setopt($ch, CURLOPT_URL, $url);
+						curl_setopt($ch, CURLOPT_POST, true);
+						curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($sms_data));
+						curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+						curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Set timeout
+		
+						// Execute the cURL request and suppress direct output
+						$response = curl_exec($ch);
+		
+						if (curl_errno($ch)) {
+							$resp['sms_status'] = 'failed';
+							$resp['sms_error'] = curl_error($ch);
+						} else {
+							$resp['sms_status'] = 'success';
+							$resp['sms_response'] = $response;
+						}
+		
+						curl_close($ch);
 				} else {
 					$resp['success'] = false;
 					$resp['message'] = $update_stmt->error;
@@ -901,7 +1220,174 @@ Class Master extends DBConnection {
 			return json_encode($resp);
 		}
 		
-			
+		function apply_new_space() {
+			// Ensure session is started to access session variables
+			if (!isset($_SESSION['id'])) {
+				$resp['status'] = 'failed';
+				$resp['error'] = 'Session expired. Please log in again.';
+				return json_encode($resp);
+			}
+		
+			$client_id = $_SESSION['id']; // Use session ID as client ID
+			extract($_POST);
+		
+			// Debugging: Log session client ID
+			error_log("Session client_id: " . $client_id);
+		
+			// Fetch current rent details
+			$stmt = $this->conn->prepare("SELECT * FROM rent_list WHERE client_id = ?");
+			$stmt->bind_param("i", $client_id);
+			$stmt->execute();
+			$result = $stmt->get_result();
+		
+			// Debugging: Log query execution and results
+			error_log("SQL executed for client_id: " . $client_id);
+			error_log("Rows fetched: " . $result->num_rows);
+		
+			if ($result->num_rows > 0) {
+				$rent = $result->fetch_assoc();
+		
+				// Save current state to history_of_rent_list table
+				$history_stmt = $this->conn->prepare("
+					INSERT INTO history_of_rent_list (client_id, space_id, date_start, date_end, months_to_rent, amount, date_application, status) 
+					VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+				");
+				$history_stmt->bind_param(
+					"iissdssi",
+					$rent['client_id'],
+					$rent['space_id'],
+					$rent['date_start'],
+					$rent['date_end'],
+					$rent['months_to_rent'],
+					$rent['amount'],
+					$rent['date_application'],
+					$rent['status']
+				);
+				$history_saved = $history_stmt->execute();
+		
+				// Debugging: Log history insertion
+				if ($history_saved) {
+					error_log("History saved successfully for client_id: $client_id");
+				} else {
+					error_log("History save error: " . $history_stmt->error);
+				}
+				$history_stmt->close();
+		
+				// Calculate the new values (if applicable, depending on requirements)
+				$current_date_end = new DateTime($rent['date_end']);
+				$current_months_to_rent = (int)$rent['months_to_rent'];
+				$current_date_application = date('Y-m-d'); // Get current system date
+		
+				// Delete the rent_list table entry
+				$delete_stmt = $this->conn->prepare("DELETE FROM rent_list WHERE client_id = ?");
+				$delete_stmt->bind_param("i", $client_id);
+				$success = $delete_stmt->execute();
+		
+				// Debugging: Log deletion
+				if ($success) {
+					error_log("Rent list deleted successfully for client_id: $client_id");
+				} else {
+					error_log("Rent list deletion failed: " . $delete_stmt->error);
+				}
+				$delete_stmt->close();
+		
+				// Update application_tracker status
+				$update_status_stmt = $this->conn->prepare("UPDATE `application_tracker` SET `application_status` = 0 WHERE `client_id` = ?");
+				$update_status_stmt->bind_param("i", $client_id);
+				$tracker_updated = $update_status_stmt->execute();
+		
+				// Debugging: Log application tracker update
+				if ($tracker_updated) {
+					error_log("Application tracker updated for client_id: $client_id");
+				} else {
+					error_log("Application tracker update failed: " . $update_status_stmt->error);
+				}
+				$update_status_stmt->close();
+		
+				// Add query to increment quantity by 1 in space_list table where id matches space_id
+				$update_space_stmt = $this->conn->prepare("UPDATE space_list SET quantity = quantity + 1 WHERE id = ?");
+				$update_space_stmt->bind_param("i", $rent['space_id']);
+				$space_updated = $update_space_stmt->execute();
+		
+				// Debugging: Log space update
+				if ($space_updated) {
+					error_log("Space quantity updated successfully for space_id: " . $rent['space_id']);
+				} else {
+					error_log("Space quantity update failed: " . $update_space_stmt->error);
+				}
+				$update_space_stmt->close();
+		
+				// Prepare the response
+				if ($success) {
+					$resp['success'] = true;
+					$resp['message'] = "You can start applying for a new space.";
+					// Fetch the contact number of the client
+					$contact_query = "SELECT contact FROM clients WHERE id = ?";
+					$stmt_contact = $this->conn->prepare($contact_query);
+					$stmt_contact->bind_param("i", $client_id);
+					$stmt_contact->execute();
+					$stmt_contact->bind_result($contact_number);
+					$stmt_contact->fetch();
+					$stmt_contact->close();
+	
+					if (empty($contact_number)) {
+						$resp['status'] = 'failed';
+						$resp['error'] = 'Failed to retrieve contact number from clients table.';
+						return json_encode($resp);
+					}
+							
+						} else {
+							$resp['success'] = false;
+							$resp['message'] = "An error occurred during processing.";
+						}
+
+						$message = "Sogod Market Vendor's Leasing and Renewal Management System\n You can Start Apply for New.";
+						$api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
+						$sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
+		
+						// Semaphore API Endpoint    
+						$url = "https://api.semaphore.co/api/v4/messages";
+		
+						// Data to be sent
+						$sms_data = [
+							'apikey' => $api_key,
+							'number' => $contact_number,
+							'message' => $message,
+							'sendername' => $sender_name,
+						];
+		
+						// Initialize cURL session
+						$ch = curl_init();
+						curl_setopt($ch, CURLOPT_URL, $url);
+						curl_setopt($ch, CURLOPT_POST, true);
+						curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($sms_data));
+						curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+						curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Set timeout
+		
+						// Execute the cURL request and suppress direct output
+						$response = curl_exec($ch);
+		
+						if (curl_errno($ch)) {
+							$resp['sms_status'] = 'failed';
+							$resp['sms_error'] = curl_error($ch);
+						} else {
+							$resp['sms_status'] = 'success';
+							$resp['sms_response'] = $response;
+						}
+		
+						curl_close($ch);
+			} else {
+				// Debugging: Log no rows found
+				error_log("No rows found for client_id: " . $client_id);
+				$resp['status'] = 'failed';
+				$resp['error'] = 'Client not found.';
+			}
+		
+			$stmt->close();
+			return json_encode($resp);
+		}
+		
+		
 	}
 
 	
@@ -973,6 +1459,9 @@ switch ($action) {
 	break;
 	case 'renew_contract':
 		echo $Master->renew_contract();
+	break;
+	case 'apply_new_space':
+		echo $Master->apply_new_space();
 	break;
 	default:
 		// echo $sysset->index(); 

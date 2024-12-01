@@ -138,6 +138,7 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 
 <script>
     // Function to calculate the end date based on start date and months to rent
+    document.getElementById('date_application').value = new Date().toISOString().split('T')[0];
     function calc_end_date() {
         const dateApplication = new Date($('#date_application').val());
         const months = parseInt($('#months_to_rent').val());

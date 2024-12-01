@@ -54,20 +54,16 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                 </select>
 			</div>
 			<div class="form-group">
-				<label for="space_name" class="control-label">Space Name</label>
-                <textarea name="space_name" id="" cols="30" rows="2" class="form-control form no-resize"><?php echo isset($space_name) ? $space_name : ''; ?></textarea>
+				<label for="space_name" class="control-label">Space Number</label>
+                <textarea name="space_name" id="space_name" cols="30" rows="2" class="form-control form no-resize"><?php echo isset($space_name) ? $space_name : ''; ?></textarea>
 			</div>
-            <div class="form-group">
-                <label for="quantity" class="control-label">Available Unit</label>
-                <input type="text" pattern="[0-9]+" name="quantity" id="quantity" class="form-control form no-resize text-right" value="<?php echo isset($quantity) ? $quantity : 0; ?>" required>
-            </div>
             <div class="form-group">
                 <label for="monthly_rate" class="control-label">Monthly Rate</label>
                 <input type="text" pattern="[0-9]+" name="monthly_rate" id="monthly_rate" class="form-control form no-resize text-right" value="<?php echo isset($monthly_rate) ? $monthly_rate : 0; ?>" required>
             </div>
             <div class="form-group">
 				<label for="description" class="control-label">Description</label>
-                <textarea name="description" id="" cols="30" rows="2" class="form-control form no-resize summernote"><?php echo isset($description) ? $description : ''; ?></textarea>
+                <textarea name="description" id="description" cols="30" rows="2" class="form-control form no-resize summernote"><?php echo isset($description) ? $description : ''; ?></textarea>
 			</div>
             <div class="form-group">
 				<label for="status" class="control-label">Status</label>
