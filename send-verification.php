@@ -1,36 +1,62 @@
 <?php
 require 'vendor/autoload.php';
 
-use Twilio\Rest\Client;
+session_start();
 
-// Twilio credentials
-$sid = 'ACf135ab5e39c48fcdbb605db4696c768c'; 
-$token = '9dcad237fbc5afa4dc00e3e2011f8ec7'; 
-$twilio_number = '+12242315707'; 
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Ensure that the keys exist in $_POST
+    if (isset($_POST['contact']) && isset($_POST['generated_code'])) {
+        $contact = $_POST['contact'];
+        $generated_code = $_POST['generated_code'];
 
-$client = new Client($sid, $token);
-session_start(); 
-if (isset($_POST['contact'])) {
-    $contact = $_POST['contact'];
-    $contact1 = "+63 991 960 9412";
-    $generated_code = $_POST['generated_code'];
-    
-    try {
-        // Ensure the contact number is in E.164 format
-        $message = $client->messages->create(
-            $contact1, 
-            [
-                'from' => $twilio_number, 
-                'body' => "Your verification code is: $generated_code"
-            ]
-        );
-        $_SESSION['verification_code'][$contact] = $generated_code;
-        echo json_encode(['status' => 'success']);
-    } catch (Exception $e) {
-        error_log("Twilio error: " . $e->getMessage()); // Log the error
-        echo json_encode(['status' => 'failed', 'msg' => 'Failed to send verification code.']);
+        try {
+            // Send the SMS via Semaphore API
+            $api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
+            $sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
+            $message = "Your otp is  $generated_code";       
+
+            // Semaphore API Endpoint
+            $url = "https://api.semaphore.co/api/v4/messages";
+
+            // Data to be sent
+            $data = [
+                'apikey' => $api_key,
+                'number' => $contact, // Recipient's number from the form
+                'message' => $message,
+                'sendername' => $sender_name,
+            ];
+
+            // Initialize cURL session
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+            // Adjust response time
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Set timeout to 30 seconds
+
+            // Execute the cURL request
+            $response = curl_exec($ch);
+
+            // Handle errors
+            if (curl_errno($ch)) {
+                echo 'Error:' . curl_error($ch);
+            } else {
+                echo "Response: " . $response;
+            }
+
+            // Close the cURL session
+            curl_close($ch);
+
+            // Store the verification code in the session
+            $_SESSION['verification_code'][$contact] = $generated_code;
+
+            echo json_encode(['status' => 'success']);
+        } catch (Exception $e) {
+            error_log("Twilio error: " . $e->getMessage()); // Log the error
+            echo json_encode(['status' => 'failed', 'msg' => 'Failed to send verification code.']);
+        }
     }
-} else {
-    echo json_encode(['status' => 'failed', 'msg' => 'No contact number provided']);
 }
 ?>

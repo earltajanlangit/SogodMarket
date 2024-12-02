@@ -1220,7 +1220,7 @@ Class Master extends DBConnection {
 			return json_encode($resp);
 		}
 		
-		function apply_new_space() {
+	function apply_new_space() {
 			// Ensure session is started to access session variables
 			if (!isset($_SESSION['id'])) {
 				$resp['status'] = 'failed';
@@ -1386,6 +1386,77 @@ Class Master extends DBConnection {
 			$stmt->close();
 			return json_encode($resp);
 		}
+
+	public function reject_application() {
+			extract($_POST); // Extract variables from the POST data
+		
+		
+		
+				// Fetch the contact number of the client
+				$contact_query = "SELECT contact FROM clients WHERE id = ?";
+				$stmt_contact = $this->conn->prepare($contact_query);
+				$stmt_contact->bind_param("i", $client_id);
+				$stmt_contact->execute();
+				$stmt_contact->bind_result($contact_number);
+				$stmt_contact->fetch();
+				$stmt_contact->close();
+		
+				// Prepare the second query to update the meeting_schedule in the rent_list table
+				if (!empty($reason)) {
+					
+						// Send SMS Notification Using Semaphore
+						$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Requirements has been rejected. Rejection reason: {$reason}.";
+						$api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
+						$sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
+		
+						// Semaphore API Endpoint    
+						$url = "https://api.semaphore.co/api/v4/messages";
+		
+						// Data to be sent
+						$sms_data = [
+							'apikey' => $api_key,
+							'number' => $contact_number,
+							'message' => $message,
+							'sendername' => $sender_name,
+						];
+		
+						// Initialize cURL session
+						$ch = curl_init();
+						curl_setopt($ch, CURLOPT_URL, $url);
+						curl_setopt($ch, CURLOPT_POST, true);
+						curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($sms_data));
+						curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+						curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Set timeout
+		
+						// Execute the cURL request and suppress direct output
+						$response = curl_exec($ch);
+		
+						if (curl_errno($ch)) {
+							$resp['sms_status'] = 'failed';
+							$resp['sms_error'] = curl_error($ch);
+						} else {
+							$resp['sms_status'] = 'success';
+							$resp['sms_response'] = $response;
+						}
+		
+						curl_close($ch);
+		
+						$resp['status'] = 'success';
+						$this->settings->set_flashdata('success', "Application Rejected. successfully");
+				
+		
+					$stmt2->close();
+				} else {
+					$resp['status'] = 'success';
+					$this->settings->set_flashdata('success', "Application Rejected. successfully");
+				}
+		
+				$this->settings->set_flashdata('success', "Application Rejected successfully.");
+			
+		
+		
+			return json_encode($resp);
+		}
 		
 		
 	}
@@ -1462,6 +1533,9 @@ switch ($action) {
 	break;
 	case 'apply_new_space':
 		echo $Master->apply_new_space();
+	break;
+	case 'reject_application':
+		echo $Master->reject_application();
 	break;
 	default:
 		// echo $sysset->index(); 

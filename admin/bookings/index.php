@@ -12,6 +12,9 @@
 <div class="card card-outline card-primary">
 	<div class="card-header">
 		<h3 class="card-title">List of Bookings</h3>
+		<div class="card-tools">
+		<a href="javascript:void(0)" id="create_new" class="btn btn-flat btn-primary"><span class="fas fa-plus"></span>  Walk-in Application</a>
+		</div>
 	</div>
 	<div class="card-body">
 		<div class="container-fluid">
@@ -188,7 +191,7 @@
 										<div>
 										<button type="button" class="btn btn-success approve_application" data-client-id="<?php echo $row['client_id']; ?>" data-id="<?php echo $row['id']; ?>">Approve</button>
 
-											<button type="button" class="btn btn-danger approve_application" data-client-id="<?php echo $row['client_id']; ?>">Reject</button>
+										<button type="button" class="btn btn-danger reject_application" data-client-id="<?php echo $row['client_id']; ?>" data-id="<?php echo $row['id']; ?>">Reject</button>
 										</div>
 										
 										<!-- Rightmost button: Close -->
@@ -223,11 +226,19 @@
 		})
 		$('.approve_application').click(function() {
 			 // Assuming you have a data attribute for booking ID
-			if (confirm("Are you sure you want to approve this application?")) {
+			if (confirm("Are you sure you want to approve this Requirement?")) {
 				// Pass both client_id and booking_id to the modal
 				uni_modal('Set Meeting', 'bookings/set_meeting.php?id=' + $(this).attr('data-id'), 'mid-large');
-
-
+			}
+		});
+		$('#create_new').click(function(){
+			uni_modal("<i class='fa fa-plus'></i> Add New Client", 'bookings/walk-in.php')
+		})
+		$('.reject_application').click(function() {
+			 // Assuming you have a data attribute for booking ID
+			if (confirm("Are you sure you want to reject this Requirement?")) {
+				// Pass both client_id and booking_id to the modal
+				uni_modal('Reject', 'bookings/reject.php?id=' + $(this).attr('data-id'), 'mid-large');
 			}
 		});
 	})
