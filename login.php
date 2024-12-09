@@ -2,6 +2,13 @@
     #uni_modal .modal-content > .modal-footer, #uni_modal .modal-content > .modal-header {
         display: none;
     }
+    #uni_modal1 .modal-content > .modal-footer {
+        display: none; /* Hides the footer */
+    }
+
+    #uni_modal1 .modal-content > .modal-header {
+        display: block; /* Ensures the header remains visible if needed */
+    }
 </style>
 
 <div class="container-fluid">
@@ -123,9 +130,12 @@
             console.log(resp);  // Debugging: Check the response from the server
             if (resp.status === 'verified') {
                  alert_toast("OTP verified successfully", 'success');
-                 setTimeout(function(){
-                 location.reload(); // Redirect or reload the page on success
-               }, 2000);
+                 end_loader();
+                // Show the application process modal
+                setTimeout(function() {
+                    uni_modal("Application Process", "application_process.php", "mid-large");
+                }, 500);
+                // location.reload();
             } else if (resp.status === 'incorrect') {
                 var _err_el = $('<div>');
                 _err_el.addClass("alert alert-danger err-msg").text(resp.error_message || "Invalid OTP.");

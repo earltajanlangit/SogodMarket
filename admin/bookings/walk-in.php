@@ -45,6 +45,10 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                     <label for="password">Password</label>
                     <input type="password" name="password" id="password" class="form-control" placeholder="Enter new password" autocomplete="off">
                 </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Confirm your password" autocomplete="off">
+                </div>
                 <input type="hidden" name="id" value="<?php echo isset($id) ? htmlspecialchars($id) : '' ?>">
             </form>
         </div>
@@ -56,6 +60,19 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                 e.preventDefault();
                 var _this = $(this);
                 $('.err-msg').remove();
+
+                // Check if passwords match
+                var password = $('#password').val();
+                var confirmPassword = $('#confirm_password').val();
+                
+                if (password !== confirmPassword) {
+                    var el = $('<div>').addClass("alert alert-danger err-msg").text("Passwords do not match.");
+                    _this.prepend(el);
+                    el.show('slow');
+                    $("html, body").animate({ scrollTop: _this.closest('.card').offset().top }, "fast");
+                    return false; // Stop form submission if passwords don't match
+                }
+
                 start_loader();
                 $.ajax({
                     url: _base_url_ + "classes/Clients.php?f=save",

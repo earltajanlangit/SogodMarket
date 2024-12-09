@@ -49,13 +49,6 @@ if (isset($space_id)) {
                    class="form-control form-control-sm rounded-0 text-right" 
                    value="<?php echo intval($months_to_rent ?? 1); ?>" required>
         </div>
-
-        <div class="form-group">
-            <label for="meeting_schedule" class="control-label">Meeting Schedule</label>
-            <input type="datetime-local" name="meeting_schedule" id="meeting_schedule" 
-                class="form-control form-control-sm rounded-0" 
-                value="<?php echo htmlspecialchars($meeting_schedule ?? ''); ?>" required>
-        </div>
         <div id="msg" class="text-danger"></div>
         <div id="check-availability-loader" class="d-none">
             <center>

@@ -109,11 +109,7 @@ require_once('config.php');
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="viewDocumentsModalLabel">Uploaded Documents</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+             </div>
             <div class="modal-body">
                 <!-- Static Documents -->
                 <div class="row">
@@ -140,6 +136,14 @@ $row = $qry->fetch_assoc(); // Fetching only one row
             </div>
         </div>
 
+        <!-- Other Document File -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <h5>Other Document File</h5>
+                <img src="/SogodMarket/uploads/documents/<?php echo $row['other_document_file']; ?>" alt="Other Document File" class="img-fluid" />
+            </div>
+        </div>
+
         <!-- Description -->
         <div class="col-12 mt-4">
             <h5>Description</h5>
@@ -153,7 +157,11 @@ $row = $qry->fetch_assoc(); // Fetching only one row
         <?php endif; ?>
     </div>
 </div>
-
+          <h5 class="modal-title" id="viewDocumentsModalLabel">Uploaded Documents</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+     
 
                 </div>
             </div>
@@ -187,6 +195,11 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                     <div class="form-group">
                         <label for="photo_id">Photo Copy of Valid ID</label>
                         <input type="file" class="form-control-file" id="photo_id" name="photo_id" required>
+                    </div>
+                    <!-- Photo Copy Valid ID File Input -->
+                    <div class="form-group">
+                        <label for="other_document">Other Document</label>
+                        <input type="file" class="form-control-file" id="other_document" name="other_document" required>
                     </div>
 
                     <!-- Description (Optional) -->
@@ -390,13 +403,19 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                                 r.status, 
                                 CONCAT(c.firstname, ' ', c.lastname) AS client, 
                                 s.space_name, 
-                                r.months_to_rent  -- Include months_to_rent from rent_list
+                                r.months_to_rent, 
+                                cat.category,  -- Category from categories table
+                                stype.name AS space_type  -- Space type from space_type_list
                             FROM 
                                 rent_list r 
                             INNER JOIN 
                                 clients c ON c.id = r.client_id 
                             INNER JOIN 
                                 space_list s ON s.id = r.space_id 
+                            INNER JOIN 
+                                categories cat ON cat.id = s.category_id  -- Join with categories table
+                            INNER JOIN 
+                                space_type_list stype ON stype.id = s.space_type_id  -- Join with space_type_list table
                             WHERE 
                                 r.client_id = '{$_SESSION['id']}'
                             UNION ALL
@@ -408,13 +427,19 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                                 hrl.status, 
                                 CONCAT(c.firstname, ' ', c.lastname) AS client, 
                                 s.space_name, 
-                                hrl.months_to_rent  -- Include months_to_rent from history_of_rent_list
+                                hrl.months_to_rent, 
+                                cat.category,  -- Category from categories table
+                                stype.name AS space_type  -- Space type from space_type_list
                             FROM 
                                 history_of_rent_list hrl 
                             INNER JOIN 
                                 clients c ON c.id = hrl.client_id 
                             INNER JOIN 
                                 space_list s ON s.id = hrl.space_id 
+                            INNER JOIN 
+                                categories cat ON cat.id = s.category_id  -- Join with categories table
+                            INNER JOIN 
+                                space_type_list stype ON stype.id = s.space_type_id  -- Join with space_type_list table
                             WHERE 
                                 hrl.client_id = '{$_SESSION['id']}'
                             ORDER BY 
@@ -423,35 +448,38 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                         ");
 
                         while ($row = $qry->fetch_assoc()):
-                        ?>
-                        <tr>
-                            <td class="text-center"><?php echo $i++; ?></td>
-                            <td><?php echo date("Y-m-d", strtotime($row['date_application'])) ?></td>
-                            <td>
-                                <?php if (empty($row['meeting_schedule'])): ?>
-                                    <small class="text-muted">No Meeting Schedule Yet</small>
-                                <?php else: ?>
-                                    <small><?php echo date("l, F j, Y", strtotime($row['meeting_schedule'])); ?></small>
-                                <?php endif; ?> 
-                            </td>
-                            <td><?php echo $row['space_name'] ?></td>
-                            <td><?php echo $row['client'] ?></td>
-                            <td><?php echo $row['months_to_rent'] ?></td>  <!-- Display the months_to_rent -->
-                            <td class="text-center">
-                                <?php if($row['status'] == 0): ?>
-                                    <span class="badge badge-light">Pending</span>
-                                <?php elseif($row['status'] == 1): ?>
-                                    <span class="badge badge-primary">Confirmed</span>
-                                <?php elseif($row['status'] == 2): ?>
-                                    <span class="badge badge-danger">Cancelled</span>
-                                <?php elseif($row['status'] == 3): ?>
-                                    <span class="badge badge-warning">Done</span>
-                                <?php else: ?>
-                                    <span class="badge badge-secondary">Unknown</span>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
+                    ?>
+                    <tr>
+                        <td class="text-center"><?php echo $i++; ?></td>
+                        <td><?php echo date("Y-m-d", strtotime($row['date_application'])) ?></td>
+                        <td>
+                            <?php if (empty($row['meeting_schedule'])): ?>
+                                <small class="text-muted">No Meeting Schedule Yet</small>
+                            <?php else: ?>
+                                <small><?php echo date("l, F j, Y", strtotime($row['meeting_schedule'])); ?></small>
+                            <?php endif; ?> 
+                        </td>
+                        <td><?php echo $row['category'] . ' - ' . $row['space_type'] . ' - ' . $row['space_name']; ?></td> <!-- Updated display -->
+                        <td><?php echo $row['client'] ?></td>
+                        <td><?php echo $row['months_to_rent'] ?></td>
+                        <td class="text-center">
+                            <?php if($row['status'] == 0): ?>
+                                <span class="badge badge-light">Pending</span>
+                            <?php elseif($row['status'] == 1): ?>
+                                <span class="badge badge-primary">Confirmed</span>
+                            <?php elseif($row['status'] == 2): ?>
+                                <span class="badge badge-danger">Cancelled</span>
+                            <?php elseif($row['status'] == 3): ?>
+                                <span class="badge badge-success">Done</span>
+                            <?php elseif($row['status'] == 4): ?>
+                                <span class="badge badge-warning">Ongoing</span>
+                            <?php else: ?>
+                                <span class="badge badge-secondary">Unknown</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+
 
                     </tbody>
                 </table>
@@ -541,7 +569,9 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                             alert(response.message);
                         }
                     } catch (error) {
-                        alert("Error parsing response.");
+                         alert(response.message);
+                            $('#addDocumentModal').modal('hide');
+                            window.location.href = "http://localhost/sogodmarket/?p=my_account";
                     }
                 },
                 error: function(xhr, status, error) {

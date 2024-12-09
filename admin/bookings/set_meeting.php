@@ -9,7 +9,6 @@ $stmt->bind_param("i", $id);
 $stmt->execute();
 $query = $stmt->get_result();
 $data = $query->fetch_assoc();
-
 ?>
 
 <div class="container-fluid">
@@ -20,6 +19,12 @@ $data = $query->fetch_assoc();
                 <input type="datetime-local" class="form-control" id="meeting_schedule" name="meeting_schedule" required>
                 <input type="hidden" id="clientIdInput" name="client_id" value="<?= htmlspecialchars($data['client_id'] ?? '') ?>">
                 <input type="hidden" id="bookingIdInput" name="booking_id" value="<?= htmlspecialchars($data['id'] ?? '') ?>"><!-- Hidden input for booking_id -->
+            </div>
+            
+            <!-- Add Venue Field -->
+            <div class="form-group">
+                <label for="venue">Venue:</label>
+                <input type="text" class="form-control" id="venue" name="venue" value="<?= htmlspecialchars($data['venue'] ?? '') ?>" required>
             </div>
         </div>
     </form>
@@ -37,7 +42,7 @@ $data = $query->fetch_assoc();
             $.ajax({
                 url: _base_url_ + "classes/Master.php?f=approve_application", // Endpoint to handle approval
                 method: "POST",
-                data: $(this).serialize(), // Serialize the form data, including client_id and booking_id
+                data: $(this).serialize(), // Serialize the form data, including client_id, booking_id, and venue
                 dataType: "json",
                 error: function(err) {
                     console.log(err);

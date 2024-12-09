@@ -48,7 +48,7 @@ $date_end = isset($_GET['date_end']) ? $_GET['date_end'] :  date("Y-m-d");
                     <col width="25%">
                 </colgroup>
                 <thead>
-                    <tr class="bg-navy text-white">
+                    <tr class="bg-navy disabled">
                         <th>#</th>
                         <th>Date Booked</th>
                         <th>Book Details</th>

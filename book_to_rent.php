@@ -41,9 +41,9 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
         <!-- Months to Rent Field -->
         <div class="form-group">
             <label for="months_to_rent" class="control-label">Months to Rent</label>
-            <input type="number" name="months_to_rent" id="months_to_rent" class="form-control form-control-sm rounded-0 text-right" value="1" required>
-        </div>
-        
+            <input type="number" name="months_to_rent" id="months_to_rent" class="form-control form-control-sm rounded-0 text-right" value="12" min="12" required>
+        </div>  
+                
         <!-- Monthly Rate Field (readonly) -->
         <div class="form-group">
             <label for="monthly_rate" class="control-label">Monthly Rate</label>
@@ -90,7 +90,7 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 
                     <p>Sir:</p>
 
-                    <p>I hereby apply under the following contract for the lease of Market Stall No. <span class="underline">__________</span> of the Municipal Market of Sogod. I am <span class="underline">__________</span> years of age, <span class="underline">__________</span> citizen, married to <span class="underline">__________</span>, and a resident of <span class="underline">__________</span>.</p>
+                    <p>I hereby apply under the following contract for the lease of Market Stall No. <span >__________</span> of the Municipal Market of Sogod. I am <span >__________</span> years of age, <span>__________</span> citizen, married to <span >__________</span>, and a resident of <span>__________</span>.</p>
 
                     <p>Should the above-mentioned stall be leased to me in accordance with the market rules and regulations, I promise to hold the same under the following conditions:</p>
 
@@ -106,15 +106,15 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 
                     <p>Very Respectfully,</p>
 
-                    <p><span class="underline">________________________</span></p>
+                    <p><span>________________________</span></p>
 
-                    <p>I, <span class="underline">________________________</span>, do hereby state that I am the person who signed the foregoing statement/application, that I have read the same, and that the contents hereof are true to the best of my knowledge and belief.</p>
+                    <p>I, <span>________________________</span>, do hereby state that I am the person who signed the foregoing statement/application, that I have read the same, and that the contents hereof are true to the best of my knowledge and belief.</p>
 
                     <p>Applicant</p>
 
-                    <p>SUBSCRIBED AND SWORN to before me, in the Municipality of Sogod, Philippines, this <span class="underline">__________</span> day of <span class="underline">________________</span>, <span class="underline">__________</span>. Applicant/Affiant exhibited his/her Community Tax Receipt No. <span class="underline">__________</span> issued on <span class="underline">____________________</span>, at <span class="underline">____________________</span>, Philippines.</p>
+                    <p>SUBSCRIBED AND SWORN to before me, in the Municipality of Sogod, Philippines, this <span>__________</span> day of <span>________________</span>, <span>__________</span>. Applicant/Affiant exhibited his/her Community Tax Receipt No. <span >__________</span> issued on <span>____________________</span>, at <span>____________________</span>, Philippines.</p>
 
-                    <p><span class="underline">________________________</span> (Applicant's Signature)</p>
+                    <p><span >________________________</span> (Applicant's Signature)</p>
                     <p>
                         <a href="uploads/contracts/contractOfLease.pdf" class="btn btn-info" target="_blank" download>
                             <i class="fas fa-download"></i> Download Contract of Lease
