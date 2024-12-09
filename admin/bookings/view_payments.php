@@ -17,21 +17,24 @@ $query = $stmt->get_result();
             <h4><b>Payment History</b></h4>
         </div>
         <hr class="border-warning">
-        
         <?php if ($query->num_rows > 0): ?>
             <table class="table table-striped text-dark">
                 <colgroup>
+                    <col width="10%">
                     <col width="20%">
+                    <col width="15%">
                     <col width="20%">
-                    <col width="40%">
-                    <col width="20%">
+                    <!-- <col width="20%"> -->
+                    <col width="35%">
                 </colgroup>
                 <thead>
                     <tr class="bg-navy text-white">
                         <th>#</th>
+                        <th>Receipt Number</th>
                         <th>Date Paid</th>
                         <th>Amount Paid</th>
-                        <th>Payment Method</th>
+                        <!-- <th>Payment Method</th> -->
+                        <th>Purpose</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,15 +44,17 @@ $query = $stmt->get_result();
                     ?>
                     <tr>
                         <td><?php echo $i++; ?></td>
+                        <td><?php echo $payment_data['receipt_number']; ?></td>
                         <td><?php echo date("Y-m-d", strtotime($payment_data['date_paid'])); ?></td>
                         <td><?php echo number_format($payment_data['amount_paid'], 2); ?></td>
-                        <td><?php echo $payment_data['payment_method']; ?></td>
+                       <!--<td><?php echo $payment_data['payment_method']; ?></td> -->
+                        <td><?php echo $payment_data['purpose']; ?></td>
                     </tr>
                     <?php } ?>
                 </tbody>
             </table>
         <?php else: ?>
-            <p class="text-center text-muted">No payments have been made yet.</p>
+            <p class="text-muted">No payments have been made yet.</p>
         <?php endif; ?>
     </div>
 </div>

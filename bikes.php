@@ -32,7 +32,7 @@ if (isset($_GET['s'])) {
             <p class="lead fw-normal text-white-50 mb-0"><?php echo $sub_title ?></p>
         </div>
     </div>
-</header>
+</header>   
 <!-- Section -->
 <section class="py-5">
     <div class="container">
@@ -58,7 +58,11 @@ if (isset($_GET['s'])) {
                             if (!empty($whereData)) $whereData .= " and ";
                             $whereData .= " and (md5(space_type_id) = '{$_GET['s']}')";
                         }
-                        $sql = "SELECT b.*, c.category, bb.name as brand 
+                        $sql = "SELECT 
+                                    b.*, 
+                                    c.category, 
+                                    bb.name as brand, 
+                                    CONCAT(c.category, ' - ', bb.name, ' - ', b.space_name) as full_space_name 
                                 FROM space_list b 
                                 INNER JOIN categories c ON b.category_id = c.id 
                                 INNER JOIN space_type_list bb ON b.space_type_id = bb.id  
@@ -81,8 +85,8 @@ if (isset($_GET['s'])) {
                             <!-- bike details -->
                             <div class="card-body p-4">
                                 <div class="">
-                                    <!-- bike name -->
-                                    <h5 class="fw-bolder"><?php echo $row['space_name'] ?></h5>
+                                    <!-- Concatenated name -->
+                                    <h5 class="fw-bolder"><?php echo $row['full_space_name'] ?></h5>
                                     <!-- bike price -->
                                     <span><b>Monthly Rate: </b><?php echo number_format($row['monthly_rate']) ?></span>
                                 </div>
@@ -149,4 +153,4 @@ if (isset($_GET['s'])) {
 .card.bike-item:hover .not-available-overlay {
     opacity: 1;
 }
-</style>
+</style> 

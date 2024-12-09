@@ -56,15 +56,8 @@
                    <p>Booking List <span class="badge badge-danger"><?php echo $bookingCount; ?></span></p>
                 </a>
               </li>
-
-
               
-              <li class="nav-item dropdown">
-                <a href="<?php echo base_url ?>admin/?page=client" class="nav-link nav-maintenance/clients">
-                  <i class="nav-icon fas fa-users"></i>
-                  <p>Vendors List</p>
-                </a>
-              </li>
+
               <li class="nav-item dropdown">
                 <a href="<?php echo base_url ?>admin/?page=users" class="nav-link nav-maintenance/users">
                   <i class="nav-icon fas fa-users"></i>
@@ -78,6 +71,12 @@
                   <p>Booking Report</p>
                 </a>
               </li>
+              <!-- <li class="nav-item dropdown">
+                <a href="<?php echo base_url ?>admin/?page=sms" class="nav-link nav-sms">
+                  <i class="nav-icon fas fa-file"></i>
+                  <p>Send SMS</p>
+                </a>
+              </li> -->
 
               <li class="nav-item dropdown">
                 <a href="<?php echo base_url ?>admin/?page=system_info" class="nav-link nav-system_info">

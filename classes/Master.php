@@ -678,10 +678,12 @@ Class Master extends DBConnection {
 		$contact = htmlspecialchars(trim($_POST['contact'] ?? ''));
 		$email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
 		$password = trim($_POST['password'] ?? '');
-	
+		$generated_code = htmlspecialchars(trim($_POST['generated_code'] ?? ''));
+
 		// Prepare SQL fields and parameters
-		$data = "firstname = ?, lastname = ?, gender = ?, address = ?, contact = ?, email = ?";
-		$params = [$firstname, $lastname, $gender, $address, $contact, $email];
+		$data = "firstname = ?, lastname = ?, gender = ?, address = ?, contact = ?, email = ?, generated_code = ?";
+		$params = [$firstname, $lastname, $gender, $address, $contact, $email, $generated_code];
+
 	
 		// Handle password if provided
 		if (!empty($password)) {
@@ -713,6 +715,8 @@ Class Master extends DBConnection {
 		// Prepare and execute SQL query
 		$stmt = $this->conn->prepare($sql);
 		$stmt->bind_param(str_repeat("s", count($params)), ...$params);
+
+		
 	
 		if ($stmt->execute()) {
 			$resp['status'] = 'success';
@@ -797,20 +801,21 @@ Class Master extends DBConnection {
 			}
 	
 			// Check if the required files are provided
-			if (isset($_FILES['cedule']) && isset($_FILES['photo_id'])) {
+			if (isset($_FILES['cedule']) && isset($_FILES['photo_id']) && isset($_FILES['other_document'])) {
 				// Handle file uploads
 				$ceduleFile = $_FILES['cedule'];
 				$photoIdFile = $_FILES['photo_id'];
+				$otherDocumentFile = $_FILES['other_document'];
 	
 				// Validate files
-				if ($ceduleFile['error'] !== UPLOAD_ERR_OK || $photoIdFile['error'] !== UPLOAD_ERR_OK) {
+				if ($ceduleFile['error'] !== UPLOAD_ERR_OK || $photoIdFile['error'] !== UPLOAD_ERR_OK || $otherDocumentFile['error'] !== UPLOAD_ERR_OK) {
 					echo json_encode(["success" => false, "message" => "Error in file upload"]);
 					exit;
 				}
 	
 				// Validate file types (ensure only certain file types are allowed)
 				$allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-				if (!in_array($ceduleFile['type'], $allowedTypes) || !in_array($photoIdFile['type'], $allowedTypes)) {
+				if (!in_array($ceduleFile['type'], $allowedTypes) || !in_array($photoIdFile['type'], $allowedTypes) || !in_array($otherDocumentFile['type'], $allowedTypes)) {
 					echo json_encode(["success" => false, "message" => "Invalid file type. Only JPG, PNG, and PDF are allowed."]);
 					exit;
 				}
@@ -829,13 +834,15 @@ Class Master extends DBConnection {
 				// Sanitize file names
 				$ceduleFileName = preg_replace("/[^a-zA-Z0-9\.\-_]/", "_", basename($ceduleFile["name"]));
 				$photoIdFileName = preg_replace("/[^a-zA-Z0-9\.\-_]/", "_", basename($photoIdFile["name"]));
+				$otherDocumentFileName = preg_replace("/[^a-zA-Z0-9\.\-_]/", "_", basename($otherDocumentFile["name"]));
 	
 				// Define the full file paths
 				$ceduleFilePath = $uploadDir . $ceduleFileName;
 				$photoIdFilePath = $uploadDir . $photoIdFileName;
+				$otherDocumentFilePath = $uploadDir . $otherDocumentFileName;
 	
 				// Move the uploaded files to the target directory
-				if (move_uploaded_file($ceduleFile["tmp_name"], $ceduleFilePath) && move_uploaded_file($photoIdFile["tmp_name"], $photoIdFilePath)) {
+				if (move_uploaded_file($ceduleFile["tmp_name"], $ceduleFilePath) && move_uploaded_file($photoIdFile["tmp_name"], $photoIdFilePath)  && move_uploaded_file($otherDocumentFile["tmp_name"], $otherDocumentFilePath)) {
 					// Optionally, save additional information like document description
 					$description = isset($_POST['document_description']) ? $_POST['document_description'] : '';
 	
@@ -848,15 +855,14 @@ Class Master extends DBConnection {
 					if ($stmt->num_rows > 0) {
 						// Update the existing record
 						$stmt->close();
-						$stmt = $this->conn->prepare("UPDATE documents SET cedule_file = ?, photo_id_file = ?, description = ? WHERE client_id = ?");
-						$stmt->bind_param("ssss", $ceduleFileName, $photoIdFileName, $description, $_SESSION['id']);
+						$stmt = $this->conn->prepare("UPDATE documents SET cedule_file = ?, photo_id_file = ?, other_document_file = ?, description = ? WHERE client_id = ?");
+						$stmt->bind_param("sssss", $ceduleFileName, $photoIdFileName,$otherDocumentFileName, $description, $_SESSION['id']);
 					} else {
 						// Insert a new record
-						$stmt->close();
-						$stmt = $this->conn->prepare("INSERT INTO documents (client_id, cedule_file, photo_id_file, description) VALUES (?, ?, ?, ?)");
-						$stmt->bind_param("ssss", $_SESSION['id'], $ceduleFileName, $photoIdFileName, $description);
+					    $stmt->close();
+						$stmt = $this->conn->prepare("INSERT INTO documents (client_id, cedule_file, photo_id_file, other_document_file, description) VALUES (?, ?, ?, ?, ?)");
+						$stmt->bind_param("issss", $_SESSION['id'], $ceduleFileName, $photoIdFileName, $otherDocumentFileName, $description);
 					}
-	
 					if ($stmt->execute()) {
 						$stmt->close();
 						echo json_encode(["success" => true, "message" => "Document processed successfully!"]);
@@ -1019,15 +1025,16 @@ Class Master extends DBConnection {
 	
 			// Prepare the second query to update the meeting_schedule in the rent_list table
 			if (!empty($meeting_schedule) && !empty($booking_id)) {
-				$stmt2 = $this->conn->prepare("UPDATE rent_list SET meeting_schedule = ? WHERE id = ?");
-				$stmt2->bind_param("si", $meeting_schedule, $booking_id); // Bind the meeting_schedule and booking_id
+				$status = 4;
+				$stmt2 = $this->conn->prepare("UPDATE rent_list SET meeting_schedule = ?, venue = ?, status = ? WHERE id = ?");
+				$stmt2->bind_param("ssii", $meeting_schedule, $venue, $status, $booking_id); // Bind the meeting_schedule and booking_id
 				$stmt2_success = $stmt2->execute();
 				$meeting_date = new DateTime($meeting_schedule);
             // Convert the date to a human-readable format (e.g., "Monday, 1st December 2024 at 3:00 PM")
                $formatted_meeting_schedule = $meeting_date->format('l, jS F Y \a\t g:i A');
 				if ($stmt2_success) {
 					// Send SMS Notification Using Semaphore
-					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Requiremest has been approved. Your meeting is scheduled on: {$formatted_meeting_schedule}.";
+					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Requiremest has been approved. Your meeting is scheduled on: {$formatted_meeting_schedule}. and the venue is {$venue}";
 					$api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
 					$sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
 	
