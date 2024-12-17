@@ -37,7 +37,7 @@
 						<th>Rent Schedule</th>
 						<th>Client</th>
 						<th>Client Address</th> <!-- New header for Address -->
-						<th>Type of Space</th>
+						<th>Space Name</th>
 						<th>Category</th> <!-- New header for Category -->
 						<th>Meeting Schedule</th> <!-- New header for Meeting Schedule -->
 						<th>Status</th>
@@ -45,17 +45,27 @@
 					</tr>
 				</thead>
 				<tbody>
-    <?php 
-    $i = 1;
-    $qry = $conn->query("SELECT r.*, CONCAT(c.firstname, ' ', c.lastname) as client, 
-                         s.space_name, cat.category, r.meeting_schedule,r.id as booking_id, c.address, c.id as client_id 
-                         FROM `rent_list` r 
-                         INNER JOIN clients c ON c.id = r.client_id 
-                         INNER JOIN space_list s ON s.id = r.space_id 
-                         INNER JOIN categories cat ON cat.id = s.category_id 
-                         ORDER BY unix_timestamp(r.date_created) DESC");
-    while($row = $qry->fetch_assoc()): 
-    ?>
+				<?php 
+					$i = 1;
+					$qry = $conn->query("SELECT r.*,
+												CONCAT(c.firstname, ' ', c.lastname) as client, 
+												s.space_name, 
+												cat.category, 
+												r.meeting_schedule,
+												r.id as booking_id, 
+												c.address, 
+												c.id as client_id, 
+												st.name as space_type_name
+										FROM `rent_list` r 
+										INNER JOIN clients c ON c.id = r.client_id 
+										INNER JOIN space_list s ON s.id = r.space_id 
+										INNER JOIN categories cat ON cat.id = s.category_id
+										INNER JOIN space_type_list st ON st.id = s.space_type_id
+										ORDER BY unix_timestamp(r.date_created) DESC");
+					while($row = $qry->fetch_assoc()): 
+				?>
+				
+
         <tr class="clickable-row" data-id="<?php echo $row['id']; ?>">
             <td class="text-center"><?php echo $i++; ?></td>
             <td><?php echo date("Y-m-d H:i", strtotime($row['date_created'])) ?></td>
@@ -70,7 +80,7 @@
             </td>
             <td><?php echo $row['client'] ?></td>
             <td><?php echo $row['address']; ?></td>
-            <td><?php echo $row['space_name']; ?></td>
+            <td><?php echo $row['space_type_name']; ?> - <?php echo $row['space_name']; ?></td>
             <td><?php echo $row['category']; ?></td>
             <td>
                 <?php if (empty($row['meeting_schedule'])): ?>
@@ -83,15 +93,15 @@
                 <?php if($row['status'] == 0): ?>
                     <span class="badge badge-light">Pending</span>
                 <?php elseif($row['status'] == 1): ?>
-                    <span class="badge badge-primary">Confirmed</span>
+                    <span class="badge badge-primary">Approved</span>
                 <?php elseif($row['status'] == 2): ?>
-                    <span class="badge badge-danger">Cancelled</span>
+                    <span class="badge badge-danger">Disapproved</span>
                 <?php elseif($row['status'] == 3): ?>
                     <span class="badge badge-success">Done</span>
 				<?php elseif($row['status'] == 4	): ?>
 					<span class="badge badge-warning">Ongoing</span>
                 <?php else: ?>
-                    <span class="badge badge-danger">Cancelled</span>
+                    <span class="badge badge-danger"></span>
                 <?php endif; ?>
             </td>
         </tr>

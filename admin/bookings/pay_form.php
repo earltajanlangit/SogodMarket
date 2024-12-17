@@ -3,13 +3,23 @@ require_once('../../config.php');
 
 if (isset($_GET['id'])) {
     $booking_id = $_GET['id'];
-    // Example query to fetch booking data for the given booking_id
+    
+    // Query to fetch booking data for the given booking_id
     $qry = $conn->query("SELECT * FROM rent_list WHERE id = '$booking_id'");
     if ($qry->num_rows > 0) {
         $rent_data = $qry->fetch_assoc();
+
+        // Query to fetch monthly_rate from space_list table
+        $space_id = $rent_data['space_id'];
+        $space_qry = $conn->query("SELECT monthly_rate FROM space_list WHERE id = '$space_id'");
+        if ($space_qry->num_rows > 0) {
+            $space_data = $space_qry->fetch_assoc();
+            $monthly_rate = $space_data['monthly_rate'];
+        } else {
+            $monthly_rate = 0; // Default to 0 if no match is found
+        }
     }
 }
-
 ?>
 
 <!-- Payment Form -->
@@ -20,6 +30,7 @@ if (isset($_GET['id'])) {
     <?php if (isset($rent_data)): ?>
         <p><b>Space:</b> <?php echo htmlspecialchars($rent_data['space_id']); ?></p>
         <p><b>Client ID:</b> <?php echo htmlspecialchars($rent_data['client_id']); ?></p>
+        <p><b>Monthly Rate:</b> <span id="monthly-rate"><?php echo htmlspecialchars($monthly_rate); ?></span></p>
         <!-- Include this inside your form -->
         <input type="hidden" name="client_id" value="<?php echo htmlspecialchars($rent_data['client_id']); ?>">
     <?php endif; ?>
@@ -33,7 +44,7 @@ if (isset($_GET['id'])) {
     <!-- Payment Amount -->
     <div class="form-group">
         <label for="amount_paid" class="control-label">Amount to Pay</label>
-        <input type="number" name="amount_paid" id="amount_paid" class="form-control form-control-sm rounded-0 text-right" min="0" step="0.01" required>
+        <input type="number" name="amount_paid" id="amount_paid" class="form-control form-control-sm rounded-0 text-right" min="0" step="0.01" required readonly>
     </div>
 
     <!-- Payment Date -->
@@ -42,28 +53,22 @@ if (isset($_GET['id'])) {
         <input type="date" name="date_paid" id="date_paid" class="form-control form-control-sm rounded-0" required>
     </div>
 
-    <!-- Payment Method -->
-    <!-- <div class="form-group">
-        <label for="payment_method" class="control-label">Payment Method</label>
-        <select name="payment_method" id="payment_method" class="custom-select custom-select-sm" required>
-            <option value="Cash">Cash</option>
-            <option value="Card">Card</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-        </select>
-    </div> -->
-
-
-    <!-- Purpose -->
-    <div class="form-group">
-        <label for="purpose" class="control-label">Purpose</label>
-        <input type="text" name="purpose" id="purpose" class="form-control form-control-sm rounded-0" required>
-    </div>
-
     <div id="msg" class="text-danger"></div>
 </form>
 
 <script>
     $(function() {
+        // Set the current date as the default value for date_paid
+        const today = new Date().toISOString().split('T')[0];
+        $('#date_paid').val(today);
+
+        // Calculate amount_paid dynamically
+        const monthlyRate = parseFloat($('#monthly-rate').text()) || 0;
+        const calculatedAmount = (monthlyRate * 2) + 500;
+
+        // Set the calculated value in the amount_paid input
+        $('#amount_paid').val(calculatedAmount.toFixed(2));
+
         // Handle form submission with Ajax
         $('#pay-form').submit(function(e) {
             e.preventDefault();

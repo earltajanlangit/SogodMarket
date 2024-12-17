@@ -127,14 +127,15 @@ if($bikes->num_rows > 0){
             $(this).addClass("active");
         });
         
-        $('#book_bike').click(function(){
-            if ('<?php echo $_SESSION['id'] ?>' <= 0) {
-                window.location.href = "login.php";
-                return false;
-            }
-            uni_modal("Rental Booking", 
-                      "book_to_rent.php?id=<?php echo isset($id) ? $id : '' ?>&monthly_rate=<?php echo $monthly_rate; ?>", 
-                      'mid-large');
-        });
+            $('#book_bike').click(function(){
+                if (!<?php echo isset($_SESSION['id']) ? 'true' : 'false'; ?>) {
+                    // If user is not logged in, show login modal
+                    uni_modal("","login.php")
+                    return;
+                }
+                uni_modal("Rental Booking", 
+                        "book_to_rent.php?id=<?php echo isset($id) ? $id : '' ?>&monthly_rate=<?php echo $monthly_rate; ?>", 
+                        'mid-large');
+            });
     });
 </script>

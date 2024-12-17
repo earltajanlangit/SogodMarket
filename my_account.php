@@ -466,9 +466,9 @@ $row = $qry->fetch_assoc(); // Fetching only one row
                             <?php if($row['status'] == 0): ?>
                                 <span class="badge badge-light">Pending</span>
                             <?php elseif($row['status'] == 1): ?>
-                                <span class="badge badge-primary">Confirmed</span>
+                                <span class="badge badge-primary">Approved</span>
                             <?php elseif($row['status'] == 2): ?>
-                                <span class="badge badge-danger">Cancelled</span>
+                                <span class="badge badge-danger">Disapproved</span>
                             <?php elseif($row['status'] == 3): ?>
                                 <span class="badge badge-success">Done</span>
                             <?php elseif($row['status'] == 4): ?>

@@ -34,6 +34,7 @@ if (isset($_GET['s'])) {
     </div>
 </header>   
 <!-- Section -->
+<!-- Section -->
 <section class="py-5">
     <div class="container">
         <div class="row">
@@ -43,6 +44,10 @@ if (isset($_GET['s'])) {
                         echo "<h4 class='text-center'><b>Search Result for '".$_GET['search']."'</b></h4><hr/>";
                     }
                 ?>
+                
+                <!-- Add the title here -->
+                <h3 class="text-center mb-4">Please Choose Areas of Interest</h3> <!-- Title for areas of interest -->
+
                 <div class="row gx-2 gx-lg-2 row-cols-1 row-cols-sm-1 row-cols-md-3 row-cols-xl-4">
                     <?php 
                         $whereData = "";

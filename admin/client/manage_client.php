@@ -45,13 +45,35 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
                     <label for="password">Password</label>
                     <input type="password" name="password" id="password" class="form-control" placeholder="Enter new password" autocomplete="off">
                 </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Confirm new password" autocomplete="off">
+                </div>
                 <input type="hidden" name="id" value="<?php echo isset($id) ? htmlspecialchars($id) : '' ?>">
+                <button type="submit" id="save-btn" class="btn btn-primary" disabled>Save</button>
             </form>
         </div>
     </div>
 
     <script>
         $(document).ready(function(){
+            function validatePasswords() {
+                var password = $('#password').val();
+                var confirmPassword = $('#confirm_password').val();
+                if (password !== confirmPassword) {
+                    $('#save-btn').prop('disabled', true);
+                    $('#confirm_password').css('border-color', 'red');
+                } else {
+                    $('#save-btn').prop('disabled', false);
+                    $('#confirm_password').css('border-color', '');
+                }
+            }
+
+            // Validate passwords on input change
+            $('#password, #confirm_password').on('keyup', function() {
+                validatePasswords();
+            });
+
             $('#manage-client').submit(function(e){
                 e.preventDefault();
                 var _this = $(this);

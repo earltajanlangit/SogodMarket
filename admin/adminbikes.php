@@ -77,7 +77,7 @@ if ($category_id > 0) {
                             <td><?php echo $i++; ?></td>
                             <td><?php echo htmlspecialchars($row['space_name']); ?></td>
                             <td class="<?php echo $status == 'Available' ? 'text-success' : 'text-danger'; ?>">
-                                <?php echo $status; ?>
+                                <?php echo $status; ?>Z
                             </td>
                             <td><?php echo htmlspecialchars($row['client_name'] ?: 'No Client'); ?></td>
                             <td><?php echo htmlspecialchars($remaining_days); ?></td>

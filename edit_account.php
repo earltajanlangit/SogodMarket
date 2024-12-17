@@ -85,7 +85,7 @@ $(function(){
         if($('.err-msg').length > 0)
             $('.err-msg').remove();
         $.ajax({
-            url: _base_url_ + "classes/Master.php?f=update_account",
+            url: _base_url_ + "classes/Clients.php?f=update_users",
             method: "POST",
             data: $(this).serialize(),
             dataType: "json",

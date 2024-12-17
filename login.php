@@ -9,6 +9,31 @@
     #uni_modal1 .modal-content > .modal-header {
         display: block; /* Ensures the header remains visible if needed */
     }
+    /* General Form Styles */
+.login-form {
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Button Styles */
+.btn-block {
+    width: 100%;
+}
+
+/* Links Styling */
+.text-primary {
+    color: #007bff !important;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+
 </style>
 
 <div class="container-fluid">
@@ -18,31 +43,42 @@
                 <span aria-hidden="true">&times;</span>
             </button>
         </h3>
-        <div class="col-lg-12">
-            <h3 class="text-center">Login</h3>
-            <hr>
+        
 
-            <!-- Initial Login Form -->
-            <form action="" id="login-form">
+            <!-- Improved Login Form -->
+<!-- Improved Login Form -->
+<form action="" id="login-form" class="login-form">
+    <div class="text-center mb-4">
+        <h2 class="text-primary">Login to Your Account</h2>
+    </div>
     <div class="form-group">
-        <label for="email" class="control-label">Email</label>
-        <input type="email" class="form-control form" id="email" name="email" autocomplete="email" required>
+        <label for="email" class="control-label">Email Address</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" autocomplete="email" required>
     </div>
     <div class="form-group">
         <label for="password" class="control-label">Password</label>
-        <input type="password" class="form-control form" id="password" name="password" autocomplete="current-password" required>
+        <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
     </div>
-    <div>
-    <a href="javascript:void()" id="create_account">Create Account</a>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <a href="javascript:void()" id="forgot-password" class="text-primary"></a>
+        </div>
+        <div>
+            <a href="javascript:void()" id="create_account" class="text-primary">Create an Account</a>
+        </div>
+    
     </div>
-    <span></span>
-    <div class="form-group d-flex justify-content-between">
-        <button id="qr-login-btn" class="btn btn-primary btn-flat">Login with QR</button>
-        <button type="submit" class="btn btn-primary btn-flat">Login</button>
-        
+    <div class="form-group my-4">
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+    </div>
+    <div class="form-group text-center my-3">
+        <span class="text-muted">Or</span>
+    </div>
+    <div class="form-group text-center">
+        <button id="qr-login-btn" class="btn btn-secondary btn-block">Login with QR</button>
     </div>
 </form>
-            
+ 
 
         <!-- OTP Verification Form (initially hidden) -->
         <form action="" method="POST" id="otp-form" style="display: none;">
@@ -63,13 +99,7 @@
 </div>
 
 <script>
-    $('#qr-login-btn').click(function() {
-        uni_modal("", "qrlogin.php", "mid-large");
-    });
-
-    $('#create_account').click(function(){
-        uni_modal("", "registration.php", "mid-large");
-    });
+   
 
     // Login Form Submission
     $('#login-form').submit(function(e){
@@ -105,6 +135,13 @@
                 }
             }
         });
+    });
+    $('#qr-login-btn').click(function() {
+        uni_modal("", "qrlogin.php", "mid-large");
+    });
+
+    $('#create_account').click(function(){
+        uni_modal("", "registration.php", "mid-large");
     });
 
     // OTP Form Submission

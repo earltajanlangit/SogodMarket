@@ -546,8 +546,8 @@ Class Master extends DBConnection {
 	
 			// Decrement the quantity of the bike if the status is Confirmed (1)
 			if (isset($status) && $status == 1) {
-				$update_sql = "UPDATE `space_list` SET `quantity` = `quantity` - 1 WHERE `id` = '{$space_id}'";
-				$update = $this->conn->query($update_sql);
+				// $update_sql = "UPDATE `space_list` SET `quantity` = `quantity` - 1 WHERE `id` = '{$space_id}'";
+				// $update = $this->conn->query($update_sql);
 				$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Rental application is Updated to Confirmed";
 				$tracker_sql = "UPDATE `application_tracker` SET `application_status` = 4 WHERE `client_id` = '{$client_id}'";
 				$tracker_update = $this->conn->query($tracker_sql);
@@ -1029,12 +1029,29 @@ Class Master extends DBConnection {
 				$stmt2 = $this->conn->prepare("UPDATE rent_list SET meeting_schedule = ?, venue = ?, status = ? WHERE id = ?");
 				$stmt2->bind_param("ssii", $meeting_schedule, $venue, $status, $booking_id); // Bind the meeting_schedule and booking_id
 				$stmt2_success = $stmt2->execute();
+	
 				$meeting_date = new DateTime($meeting_schedule);
-            // Convert the date to a human-readable format (e.g., "Monday, 1st December 2024 at 3:00 PM")
-               $formatted_meeting_schedule = $meeting_date->format('l, jS F Y \a\t g:i A');
+				$formatted_meeting_schedule = $meeting_date->format('l, jS F Y \a\t g:i A');
+	
 				if ($stmt2_success) {
+					// Update the quantity in space_list table
+					if (!empty($space_id)) {
+						$update_space_query = "UPDATE space_list SET quantity = quantity - 1 WHERE id = ?";
+						$stmt3 = $this->conn->prepare($update_space_query);
+						$stmt3->bind_param("i", $space_id);
+						$stmt3_success = $stmt3->execute();
+	
+						if (!$stmt3_success) {
+							$resp['status'] = 'failed';
+							$resp['error'] = 'Failed to update space_list quantity: ' . $stmt3->error;
+							return json_encode($resp);
+						}
+	
+						$stmt3->close();
+					}
+	
 					// Send SMS Notification Using Semaphore
-					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Requiremest has been approved. Your meeting is scheduled on: {$formatted_meeting_schedule}. and the venue is {$venue}";
+					$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour requirement has been approved. Your meeting is scheduled on: {$formatted_meeting_schedule}. and the venue is {$venue}";
 					$api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
 					$sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
 	
@@ -1093,6 +1110,7 @@ Class Master extends DBConnection {
 	
 		return json_encode($resp);
 	}
+	
 
 
 	function renew_contract() {
@@ -1412,7 +1430,7 @@ Class Master extends DBConnection {
 				if (!empty($reason)) {
 					
 						// Send SMS Notification Using Semaphore
-						$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Requirements has been rejected. Rejection reason: {$reason}.";
+						$message = "Sogod Market Vendor's Leasing and Renewal Management System\nYour Requirements has been rejected. Rejection reason: {$reason}.  Please Comply!!! ";
 						$api_key = "c07761afafbbeb8051c2b6fbb1e329af"; // Your Semaphore API Key
 						$sender_name = "SogodMarket"; // Registered Sender Name in Semaphore
 		

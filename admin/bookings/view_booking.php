@@ -1,6 +1,4 @@
-<?php 
-require_once('../../config.php');
-?>
+
 <?php
 require_once('../../config.php');
 $id = $_GET['id'];
@@ -111,6 +109,16 @@ $query = $stmt->get_result();
     padding: 5px;
     border-radius: 5px;
     }
+    .arrow {
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 25px solid #007BFF;
+    margin: 0 auto; /* Centers the arrow horizontally */
+    }
+    
+
 </style>
 
 <?php 
@@ -118,6 +126,7 @@ if(!isset($_GET['id'])) {
     $_settings->set_flashdata('error','No Booking ID Provided.');
     redirect('admin/?page=bookings');
 }
+
 
 $booking = $conn->query("SELECT r.*, 
                         CONCAT(c.firstname, ' ', c.lastname) AS client, 
@@ -152,6 +161,11 @@ if(isset($space_id)){
 
 $docQry = $conn->query("SELECT * FROM documents WHERE client_id = {$client_id} LIMIT 1");
 $docRow = $docQry->fetch_assoc();
+
+$trackerQry = $conn->query("SELECT application_status FROM application_tracker WHERE client_id = {$client_id}");
+$trackerRow = $trackerQry->fetch_assoc();
+
+$applicationStatus = $trackerRow['application_status'] ?? null; 
 ?>
 
 <div class="container-fluid px-3 py-2">
@@ -180,8 +194,12 @@ $docRow = $docQry->fetch_assoc();
                 </div>
                 <!-- Approve and Reject Buttons inside Uploaded Documents -->
                 <div class="col-12 text-center mt-4">
-                    <button type="button" class="btn btn-success approve_application" data-id="<?php echo $_GET['id']; ?>">Approve</button>
-                    <button type="button" class="btn btn-danger reject_application"  data-id="<?php echo $_GET['id']; ?>">Reject</button>
+                <button type="button" class="btn btn-success approve_application" data-id="<?php echo $id; ?>" <?php echo ($applicationStatus == 2) ? 'disabled' : ''; ?>>
+                    Approve
+                </button>
+                <button type="button" class="btn btn-danger reject_application" data-id="<?php echo $id; ?>" <?php echo ($applicationStatus == 2) ? 'disabled' : ''; ?>>
+                    Reject
+                </button>
                 </div>
             </div>
             <?php else: ?>
@@ -190,6 +208,9 @@ $docRow = $docQry->fetch_assoc();
             </div>
             <?php endif; ?>
         </div>
+    </div>
+    <div class="container-fluid text-center">
+        <div class="arrow"></div>
     </div>
    <!-- Payments -->
 <div class="card rounded-0 mt-4">
@@ -245,7 +266,8 @@ $docRow = $docQry->fetch_assoc();
         <?php echo ($status != 4 && $status != 1) ? 'disabled' : ''; ?>>Pay</button>
     </div>
 </div>
-
+<div class="arrow"></div>
+<p></p>
    <!-- Booking Details -->
     <div class="card">
         <div class="card-header">Booking Details</div>
@@ -266,10 +288,10 @@ $docRow = $docQry->fetch_assoc();
                                         echo '<span class="badge badge-light text-dark badge-custom">Pending</span>';
                                     break;
                                     case '1':
-                                        echo '<span class="badge badge-primary badge-custom">Confirmed</span>';
+                                        echo '<span class="badge badge-primary badge-custom">Approved</span>';
                                     break;
                                     case '2':
-                                        echo '<span class="badge badge-danger badge-custom">Cancelled</span>';
+                                        echo '<span class="badge badge-danger badge-custom">Disapproved</span>';
                                     break;
                                     case '3':
                                         echo '<span class="badge badge-success badge-custom">Done</span>';
@@ -278,7 +300,7 @@ $docRow = $docQry->fetch_assoc();
                                         echo '<span class="badge badge-warning badge-custom">Ongoing</span>';
                                     break;
                                     default:
-                                        echo '<span class="badge badge-danger badge-custom">Cancelled</span>';
+                                        echo '<span class="badge badge-danger badge-custom">Disapproved</span>';
                                     break;
                                 }
                             ?>
@@ -314,7 +336,7 @@ $docRow = $docQry->fetch_assoc();
 <script>
     $('#payButton').click(function(){
             // Open the payment form modal by calling uni_modal
-            uni_modal("Make a Payment", "/sogodmarket/admin/bookings/pay_form.php?id=<?php echo $id; ?>");
+            uni_modal("Application Payment", "/sogodmarket/admin/bookings/pay_form.php?id=<?php echo $id; ?>");
     });
     $('#update').click(function() {
             uni_modal("Edit Booking Details", "./bookings/manage_booking.php?id=<?php echo $id ?>")

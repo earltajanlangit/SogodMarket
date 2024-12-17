@@ -91,13 +91,15 @@ $date_end = isset($_GET['date_end']) ? $_GET['date_end'] :  date("Y-m-d");
                                 <?php if($row['status'] == 0): ?>
                                     <span class="badge badge-light">Pending</span>
                                 <?php elseif($row['status'] == 1): ?>
-                                    <span class="badge badge-primary">Confirmed</span>
+                                    <span class="badge badge-primary">Approved</span>
                                 <?php elseif($row['status'] == 2): ?>
-                                    <span class="badge badge-danger">Cancelled</span>
+                                    <span class="badge badge-danger">Disapproved</span>
                                 <?php elseif($row['status'] == 3): ?>
                                     <span class="badge badge-success">Done</span>
+                                <?php elseif($row['status'] == 4): ?>
+                                    <span class="badge badge-success">Ongoing</span>
                                 <?php else: ?>
-                                    <span class="badge badge-danger">Cancelled</span>
+                                    <span class="badge badge-danger">Disapproved</span>
                                 <?php endif; ?>
                             </small>
                         </td>
@@ -134,13 +136,15 @@ $date_end = isset($_GET['date_end']) ? $_GET['date_end'] :  date("Y-m-d");
                                 <?php if($historyRow['status'] == 0): ?>
                                     <span class="badge badge-light">Pending</span>
                                 <?php elseif($historyRow['status'] == 1): ?>
-                                    <span class="badge badge-primary">Confirmed</span>
+                                    <span class="badge badge-primary">Approved</span>
                                 <?php elseif($historyRow['status'] == 2): ?>
-                                    <span class="badge badge-danger">Cancelled</span>
+                                    <span class="badge badge-danger">Disapproved</span>
                                 <?php elseif($historyRow['status'] == 3): ?>
                                     <span class="badge badge-success">Done</span>
+                                <?php elseif($row['status'] == 4): ?>
+                                    <span class="badge badge-success">Ongoing</span>
                                 <?php else: ?>
-                                    <span class="badge badge-danger">Cancelled</span>
+                                    <span class="badge badge-danger">Disapproved</span>
                                 <?php endif; ?>
                             </small>
                         </td>

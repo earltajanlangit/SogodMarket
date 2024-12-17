@@ -19,6 +19,7 @@ $data = $query->fetch_assoc();
                 <input type="datetime-local" class="form-control" id="meeting_schedule" name="meeting_schedule" required>
                 <input type="hidden" id="clientIdInput" name="client_id" value="<?= htmlspecialchars($data['client_id'] ?? '') ?>">
                 <input type="hidden" id="bookingIdInput" name="booking_id" value="<?= htmlspecialchars($data['id'] ?? '') ?>"><!-- Hidden input for booking_id -->
+                <input type="hidden" id="spaceIdInput" name="space_id" value="<?= htmlspecialchars($data['space_id'] ?? '') ?>"><!-- Hidden input for booking_id -->
             </div>
             
             <!-- Add Venue Field -->

@@ -8,66 +8,74 @@
     <div class="row">
         <!-- Total Categories -->
         <div class="col-12 col-sm-6 col-md-3">
-            <div class="info-box">
-                <span class="info-box-icon bg-light elevation-1"><i class="fas fa-th-list"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Total Categories</span>
-                    <span class="info-box-number">
-                        <?php
-                            $category = $conn->query("SELECT count(id) as total FROM categories WHERE status = '1'")->fetch_assoc()['total'];
-                            echo number_format($category);
-                        ?>
-                    </span>
+            <a href="http://localhost/sogodmarket/admin/?page=maintenance/category" class="text-decoration-none text-dark">
+                <div class="info-box">
+                    <span class="info-box-icon bg-light elevation-1"><i class="fas fa-th-list"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Categories</span>
+                        <span class="info-box-number">
+                            <?php
+                                $category = $conn->query("SELECT count(id) as total FROM categories WHERE status = '1'")->fetch_assoc()['total'];
+                                echo number_format($category);
+                            ?>
+                        </span>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         
         <!-- Total Type of Spaces -->
         <div class="col-12 col-sm-6 col-md-3">
-            <div class="info-box mb-3">
-                <span class="info-box-icon bg-info elevation-1"><i class="fas fa-copyright"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Total Type of Spaces</span>
-                    <span class="info-box-number">
-                        <?php
-                            $brands = $conn->query("SELECT count(id) as total FROM space_type_list WHERE status = '1'")->fetch_assoc()['total'];
-                            echo number_format($brands);
-                        ?>
-                    </span>
+            <a href="http://localhost/sogodmarket/admin/?page=maintenance/brands" class="text-decoration-none text-dark">
+                <div class="info-box mb-3">
+                    <span class="info-box-icon bg-info elevation-1"><i class="fas fa-copyright"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Type of Spaces</span>
+                        <span class="info-box-number">
+                            <?php
+                                $brands = $conn->query("SELECT count(id) as total FROM space_type_list WHERE status = '1'")->fetch_assoc()['total'];
+                                echo number_format($brands);
+                            ?>
+                        </span>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Total Spaces Listed -->
         <div class="col-12 col-sm-6 col-md-3">
-            <div class="info-box mb-3">
-                <span class="info-box-icon bg-success elevation-1"><i class="nav-icon fas fa-store"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Total Spaces Listed</span>
-                    <span class="info-box-number">
-                        <?php
-                            $bike = $conn->query("SELECT count(id) as total FROM space_list WHERE status = '1'")->fetch_assoc()['total'];
-                            echo number_format($bike);
-                        ?>
-                    </span>
+            <a href="http://localhost/sogodmarket/admin/?page=bike" class="text-decoration-none text-dark">
+                <div class="info-box mb-3">
+                    <span class="info-box-icon bg-success elevation-1"><i class="nav-icon fas fa-store"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Spaces Listed</span>
+                        <span class="info-box-number">
+                            <?php
+                                $bike = $conn->query("SELECT count(id) as total FROM space_list WHERE status = '1'")->fetch_assoc()['total'];
+                                echo number_format($bike);
+                            ?>
+                        </span>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Clients -->
         <div class="col-12 col-sm-6 col-md-3">
-            <div class="info-box mb-3">
-                <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-users"></i></span>
-                <div class="info-box-content">
-                    <span class="info-box-text">Clients</span>
-                    <span class="info-box-number">
-                        <?php
-                            $clients = $conn->query("SELECT count(id) as total FROM clients")->fetch_assoc()['total'];
-                            echo number_format($clients);
-                        ?>
-                    </span>
+            <a href="http://localhost/sogodmarket/admin/?page=users" class="text-decoration-none text-dark">
+                <div class="info-box mb-3">
+                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-users"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Clients</span>
+                        <span class="info-box-number">
+                            <?php
+                                $clients = $conn->query("SELECT count(id) as total FROM clients")->fetch_assoc()['total'];
+                                echo number_format($clients);
+                            ?>
+                        </span>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 

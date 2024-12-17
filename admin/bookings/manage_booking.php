@@ -70,9 +70,10 @@ if (isset($space_id)) {
             <label for="status" class="control-label">Status</label>
             <select name="status" id="status" class="custom-select custom-select-sm">
                 <option value="0" <?php echo isset($status) && $status == 0 ? "selected" : ''; ?>>Pending</option>
-                <option value="1" <?php echo isset($status) && $status == 1 ? "selected" : ''; ?>>Confirmed</option>
-                <option value="2" <?php echo isset($status) && $status == 2 ? "selected" : ''; ?>>Cancelled</option>
+                <option value="1" <?php echo isset($status) && $status == 1 ? "selected" : ''; ?>>Approved</option>
+                <option value="2" <?php echo isset($status) && $status == 2 ? "selected" : ''; ?>>Disapproved</option>
                 <option value="3" <?php echo isset($status) && $status == 3 ? "selected" : ''; ?>>Done</option>
+                <option value="3" <?php echo isset($status) && $status == 4 ? "selected" : ''; ?>>Ongoing</option>
             </select>
         </div>
     </form>
